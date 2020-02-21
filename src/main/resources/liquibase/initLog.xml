@@ -7,31 +7,108 @@
    http://www.liquibase.org/xml/ns/dbchangelog
    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
 
-
-
-    <changeSet author="kvv" id="1">
-        <preConditions onFail="WARN">
+    <changeSet  id="1" author="kvv">
+        <preConditions>
             <not>
-                <tableExists tableName="created_by_liquibase"/>
+                <tableExists tableName="states"/>
             </not>
         </preConditions>
-        <createTable tableName="created_by_liquibase">
-            <column autoIncrement="true" name="id" type="BIGINT">
+        <createTable tableName="states">
+            <column name="id" type="BIGINT">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
-            <!--column name="name" type="VARCHAR(255)"/-->
+            <column name="name" type="VARCHAR(50)">
+                <constraints unique="true" nullable="false"/>
+            </column>
         </createTable>
     </changeSet>
 
-    <changeSet author="kvv" id = "2">
+    <changeSet id="2" author="kvv">
         <preConditions>
             <not>
-                <tableExists tableName="locations"/>
+                <tableExists tableName="nodes"/>
             </not>
         </preConditions>
-        <createTable tableName="locations">
-            <column ></column>
+        <createTable tableName="nodes">
+            <column name="id" type="BIGINT">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(50)"/>
+            <column name="postcode" type="VARCHAR(255)">
+                <constraints unique="true" nullable="false"/>
+            </column>
         </createTable>
+    </changeSet>
+
+    <changeSet id="3" author="kvv">
+        <preConditions>
+            <not>
+                <tableExists tableName="types"/>
+            </not>
+        </preConditions>
+        <createTable tableName="types">
+            <column name="id" type="BIGINT">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(50)">
+                <constraints unique="true" nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="4" author="kvv">
+        <preConditions>
+            <not>
+                <tableExists tableName="packages"/>
+            </not>
+        </preConditions>
+        <createTable tableName="packages">
+            <column name="id" type="BIGINT">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="identifier" type="VARCHAR(50)">
+                <constraints unique="true" nullable="false"/>
+            </column>
+            <column name="recipient" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="state" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="type_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="5" author="kvv">
+        <preConditions>
+            <not>
+                <tableExists tableName="story_points"/>
+            </not>
+        </preConditions>
+        <createTable tableName="story_points">
+            <column name="id" type="BIGINT">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="happened" type="DATETIME">
+                <constraints nullable="false"/>
+            </column>
+            <column name = "node_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="package_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="package_state" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    
+    <changeSet id="6" author="kvv">
+        <addForeignKeyConstraint baseTableName="packages" baseColumnNames="type_id" constraintName="fk_type_package" referencedTableName="types"
+                                 referencedColumnNames="id"/>
     </changeSet>
 
 </databaseChangeLog>
