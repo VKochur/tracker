@@ -111,4 +111,33 @@
                                  referencedColumnNames="id"/>
     </changeSet>
 
+    <changeSet id="7" author="kvv">
+        <addForeignKeyConstraint baseTableName="story_points" baseColumnNames="package_id" constraintName="fk_package_story" referencedTableName="packages"
+                                 referencedColumnNames="id"/>
+    </changeSet>
+
+    <changeSet id="8" author="kvv">
+        <addForeignKeyConstraint baseTableName="story_points" baseColumnNames="node_id" constraintName="fk_node_story" referencedTableName="nodes"
+                                 referencedColumnNames="id"/>
+    </changeSet>
+
+    <changeSet id="9" author="kvv">
+        <preConditions>
+            <not>
+                <columnExists tableName="packages" columnName="destination_id"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="packages">
+            <column name="destination_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="10" author="kvv">
+        <addForeignKeyConstraint baseTableName="packages" baseColumnNames="destination_id" constraintName="fk_node_package" referencedTableName="nodes"
+                                 referencedColumnNames="id"/>
+    </changeSet>
+
+
 </databaseChangeLog>
