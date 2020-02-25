@@ -2,6 +2,7 @@
         xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
         xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:pro="http://www.liquibase.org/xml/ns/pro"
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext
    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd
    http://www.liquibase.org/xml/ns/dbchangelog
@@ -139,5 +140,25 @@
                                  referencedColumnNames="id"/>
     </changeSet>
 
+    <!--changeSet id="11" author="kvv">
+        <pro:addCheckConstraint tableName="packages" constraintName="enum_status" validate="true">
+            state in ('STORAGE', 'MOVEMENT')
+        </pro:addCheckConstraint>
+    </changeSet-->
+
+    <changeSet id="12" author="kvv">
+        <preConditions>
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM packages WHERE state NOT IN ('STORAGE', 'MOVEMENT')</sqlCheck>
+        </preConditions>
+        <sql>
+            ALTER TABLE packages
+            ADD CONSTRAINT enum_state CHECK(state IN ('STORAGE', 'MOVEMENT'))
+        </sql>
+        <rollback>
+            <sql>
+               ALTER TABLE packages DROP CONSTRAINT enum_state;
+            </sql>
+        </rollback>
+    </changeSet>
 
 </databaseChangeLog>
