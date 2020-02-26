@@ -11,6 +11,6 @@ public class Type {
     @SequenceGenerator(name = "type_generator", sequenceName = "types_sequence")
     private Long id;
 
-    @Column(name = "name")
+    @Column(name = "name", nullable = false, unique = true)
     private String name;
 }

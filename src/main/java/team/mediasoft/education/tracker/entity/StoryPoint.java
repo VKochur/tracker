@@ -13,7 +13,7 @@ public class StoryPoint {
     @Id
     private Long id;
 
-    @Column(name = "happened")
+    @Column(name = "happened", nullable = false)
     private LocalDateTime point;
 
     @ManyToOne
