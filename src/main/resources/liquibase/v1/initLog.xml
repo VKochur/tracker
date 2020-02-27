@@ -140,13 +140,7 @@
                                  referencedColumnNames="id"/>
     </changeSet>
 
-    <!--changeSet id="11" author="kvv">
-        <pro:addCheckConstraint tableName="packages" constraintName="enum_status" validate="true">
-            state in ('STORAGE', 'MOVEMENT')
-        </pro:addCheckConstraint>
-    </changeSet-->
-
-    <changeSet id="12" author="kvv">
+    <changeSet id="11" author="kvv">
         <preConditions>
             <sqlCheck expectedResult="0">SELECT COUNT(*) FROM packages WHERE state NOT IN ('STORAGE', 'MOVEMENT')</sqlCheck>
         </preConditions>
@@ -159,6 +153,16 @@
                ALTER TABLE packages DROP CONSTRAINT enum_state;
             </sql>
         </rollback>
+    </changeSet>
+    
+    <changeSet id="12" author="kvv">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <sequenceExists sequenceName="type_id_sequence"></sequenceExists>
+            </not>
+        </preConditions>
+
+        <createSequence sequenceName="type_id_sequence" cacheSize="1" startValue="1" incrementBy="5" ></createSequence>
     </changeSet>
 
 </databaseChangeLog>
