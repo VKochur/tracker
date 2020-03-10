@@ -20,6 +20,8 @@ dependencies {
 	}
 	compile group: 'org.postgresql', name: 'postgresql', version: '42.2.10'
 	compile group: 'org.liquibase', name: 'liquibase-core', version: '3.8.6'
+	compile group: 'io.springfox', name: 'springfox-swagger2', version: '2.9.2'
+	compile group: 'io.springfox', name: 'springfox-swagger-ui', version: '2.9.2'
 
 }
 
