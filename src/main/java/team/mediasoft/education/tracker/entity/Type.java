@@ -8,7 +8,7 @@ public class Type {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "type_generator")
-    @SequenceGenerator(name = "type_generator", sequenceName = "types_sequence")
+    @SequenceGenerator(name = "type_generator", sequenceName = "type_id_sequence", allocationSize = 5)
     private Long id;
 
     @Column(name = "name", nullable = false, unique = true)

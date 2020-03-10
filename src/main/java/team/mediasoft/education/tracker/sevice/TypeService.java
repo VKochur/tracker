@@ -1,11 +1,14 @@
 package team.mediasoft.education.tracker.sevice;
 
 import team.mediasoft.education.tracker.dto.TypeDto;
+import team.mediasoft.education.tracker.exception.NotExistsDataException;
 import team.mediasoft.education.tracker.exception.WrongInputDataException;
 
 import java.util.List;
 
 public interface TypeService {
+
+    TypeDto getById(Long id) throws NotExistsDataException;
 
     TypeDto getByNameIgnoreCase(String typeName) throws WrongInputDataException;
 

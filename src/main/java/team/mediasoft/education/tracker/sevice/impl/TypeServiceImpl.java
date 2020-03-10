@@ -2,13 +2,16 @@ package team.mediasoft.education.tracker.sevice.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import team.mediasoft.education.tracker.dto.TypeDto;
 import team.mediasoft.education.tracker.dto.mapper.Mapper;
 import team.mediasoft.education.tracker.entity.Type;
 import team.mediasoft.education.tracker.exception.FailForeignConstraintException;
 import team.mediasoft.education.tracker.exception.NotExistsDataException;
 import team.mediasoft.education.tracker.exception.NotUniqueDataException;
+import team.mediasoft.education.tracker.exception.WrongInputDataException;
 import team.mediasoft.education.tracker.repository.TypeRepository;
 import team.mediasoft.education.tracker.sevice.TypeService;
 
@@ -31,6 +34,17 @@ public class TypeServiceImpl implements TypeService {
     @Autowired
     public void setTypeRepository(TypeRepository typeRepository) {
         this.typeRepository = typeRepository;
+    }
+
+    @Override
+    public TypeDto getById(Long id) throws NotExistsDataException {
+        //todo: check id != null
+        Optional<Type> byId = typeRepository.findById(id);
+        if (byId.isPresent()) {
+            return dtoMapper.getDto(byId.get());
+        } else {
+            throw new NotExistsDataException("not found type by id = " + id);
+        }
     }
 
     @Override
@@ -60,7 +74,7 @@ public class TypeServiceImpl implements TypeService {
     @Override
     public TypeDto updateName(String oldName, String newName) throws NotUniqueDataException, NotExistsDataException {
         Optional<Type> withOldNameInDb = typeRepository.findByNameIgnoreCase(oldName);
-        if (!withOldNameInDb.isPresent()) {
+        if (withOldNameInDb.isPresent()) {
             Optional<Type> withNewNameInDb = typeRepository.findByNameIgnoreCase(newName);
             if (!withNewNameInDb.isPresent()) {
                 Type typeInDb = withNewNameInDb.get();
