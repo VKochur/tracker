@@ -1,16 +1,15 @@
 package team.mediasoft.education.tracker.api.rest.type;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 import team.mediasoft.education.tracker.dto.TypeDto;
-import team.mediasoft.education.tracker.exception.NotExistsDataException;
-import team.mediasoft.education.tracker.exception.NotUniqueDataException;
-import team.mediasoft.education.tracker.exception.WrongInputDataException;
+import team.mediasoft.education.tracker.exception.tree.request.NotExistsDataException;
+import team.mediasoft.education.tracker.exception.tree.request.WrongInputDataException;
 import team.mediasoft.education.tracker.sevice.TypeService;
+import team.mediasoft.education.tracker.support.Wrap;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/type")
@@ -25,29 +24,33 @@ public class TypeRest {
 
     @GetMapping(value = "/{id}", produces = "application/json;charset=utf-8")
     @ResponseBody
-    public TypeDto getById(@PathVariable(name = "id") Long id) {
-        try {
-            return typeService.getById(id);
-        } catch (NotExistsDataException e) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
+    public TypeDto getById(@PathVariable(name = "id") Long id) throws NotExistsDataException {
+        Optional<TypeDto> byId = typeService.getById(id);
+        if (byId.isPresent()) {
+            return byId.get();
+        } else {
+            throw new NotExistsDataException("type not found. id = " + id);
         }
     }
 
     @PostMapping(value = "{typeName}", produces = "application/json;charset=utf-8")
     @ResponseBody
     public TypeDto createType(@PathVariable(name = "typeName") String typeName) throws WrongInputDataException {
-        return typeService.create(typeName);
+        Wrap<TypeDto, WrongInputDataException> typeDtoWrap = typeService.create(typeName);
+        return typeDtoWrap.getValueOrElseThrow();
     }
 
     @PutMapping(produces = "application/json;charset=utf-8")
     public TypeDto updateName(@RequestBody TypeInput typeInput) throws WrongInputDataException {
-        return typeService.updateName(typeInput.getOldName(), typeInput.getNewName());
+        Wrap<TypeDto, WrongInputDataException> typeDtoWrap = typeService.updateName(typeInput.getOldName(), typeInput.getNewName());
+        return typeDtoWrap.getValueOrElseThrow();
     }
 
     @DeleteMapping(value = "/{typeName}", produces = "application/json;charset=utf-8")
     @ResponseBody
     public TypeDto deleteByName(@PathVariable(name = "typeName") String typeName) throws WrongInputDataException {
-        return typeService.deleteByName(typeName);
+        Wrap<TypeDto, WrongInputDataException> typeDtoWrap = typeService.deleteByName(typeName);
+        return typeDtoWrap.getValueOrElseThrow();
     }
 
     @GetMapping(produces = "application/json;charset=utf-8")

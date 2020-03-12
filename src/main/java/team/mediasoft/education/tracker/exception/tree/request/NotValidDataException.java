@@ -1,4 +1,4 @@
-package team.mediasoft.education.tracker.exception;
+package team.mediasoft.education.tracker.exception.tree.request;
 
 /**
  * Exception which is caused, because user specified data in wrong format

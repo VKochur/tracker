@@ -1,4 +1,4 @@
-package team.mediasoft.education.tracker.exception;
+package team.mediasoft.education.tracker.exception.tree.request;
 
 /**
  * Exception which is caused, because action breaks rule, that some data must be unique
