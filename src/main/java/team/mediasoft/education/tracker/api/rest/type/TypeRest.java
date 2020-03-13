@@ -3,9 +3,9 @@ package team.mediasoft.education.tracker.api.rest.type;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import team.mediasoft.education.tracker.dto.TypeDto;
+import team.mediasoft.education.tracker.exception.SurfaceException;
 import team.mediasoft.education.tracker.exception.tree.request.NotExistsDataException;
-import team.mediasoft.education.tracker.exception.tree.request.WrongInputDataException;
-import team.mediasoft.education.tracker.sevice.TypeService;
+import team.mediasoft.education.tracker.service.TypeService;
 import team.mediasoft.education.tracker.support.Wrap;
 
 import java.util.List;
@@ -33,30 +33,41 @@ public class TypeRest {
         }
     }
 
+    @GetMapping(value = "/search/{typeName}", produces = "application/json;charset=utf-8")
+    @ResponseBody
+    public Long getIdByName(@PathVariable(name = "typeName") String typeName) throws NotExistsDataException {
+        Optional<Long> id = typeService.getIdByNameIgnoreCase(typeName);
+        if (id.isPresent()) {
+            return id.get();
+        } else {
+            throw new NotExistsDataException("not found type by name = \"" + typeName + "\" (case of letters is ignored)");
+        }
+    }
+
     @PostMapping(value = "{typeName}", produces = "application/json;charset=utf-8")
     @ResponseBody
-    public TypeDto createType(@PathVariable(name = "typeName") String typeName) throws WrongInputDataException {
-        Wrap<TypeDto, WrongInputDataException> typeDtoWrap = typeService.create(typeName);
+    public TypeDto createType(@PathVariable(name = "typeName") String typeName) throws SurfaceException {
+        Wrap<TypeDto, SurfaceException> typeDtoWrap = typeService.create(typeName);
         return typeDtoWrap.getValueOrElseThrow();
     }
 
-    @PutMapping(produces = "application/json;charset=utf-8")
-    public TypeDto updateName(@RequestBody TypeInput typeInput) throws WrongInputDataException {
-        Wrap<TypeDto, WrongInputDataException> typeDtoWrap = typeService.updateName(typeInput.getOldName(), typeInput.getNewName());
+    @PutMapping(value = "/{id}/{newName}}", produces = "application/json;charset=utf-8")
+    public TypeDto updateName(@PathVariable(name = "id") Long id, @PathVariable(name = "newName") String name) throws SurfaceException {
+        Wrap<TypeDto, SurfaceException> typeDtoWrap = typeService.updateName(id, name);
         return typeDtoWrap.getValueOrElseThrow();
     }
 
-    @DeleteMapping(value = "/{typeName}", produces = "application/json;charset=utf-8")
+    @DeleteMapping(value = "/{id}", produces = "application/json;charset=utf-8")
     @ResponseBody
-    public TypeDto deleteByName(@PathVariable(name = "typeName") String typeName) throws WrongInputDataException {
-        Wrap<TypeDto, WrongInputDataException> typeDtoWrap = typeService.deleteByName(typeName);
+    public TypeDto deleteById(@PathVariable(name = "id") Long id) throws SurfaceException {
+        Wrap<TypeDto, SurfaceException> typeDtoWrap = typeService.deleteById(id);
         return typeDtoWrap.getValueOrElseThrow();
     }
 
     @GetMapping(produces = "application/json;charset=utf-8")
     @ResponseBody
     public List<TypeDto> findAll() {
-        return typeService.getAllOrderByName(true);
+        return typeService.getAllTypesOrderByName(true);
     }
 
 }
