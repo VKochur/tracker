@@ -1,7 +1,6 @@
 package team.mediasoft.education.tracker.exception.tree.request;
 
 import org.springframework.http.HttpStatus;
-import team.mediasoft.education.tracker.exception.ErrorResponse;
 import team.mediasoft.education.tracker.exception.SurfaceException;
 
 /**
@@ -9,28 +8,9 @@ import team.mediasoft.education.tracker.exception.SurfaceException;
  */
 public abstract class WrongInputDataException extends SurfaceException {
 
-    public WrongInputDataException() {
-    }
+    public static final HttpStatus HTTP_STATUS = HttpStatus.UNPROCESSABLE_ENTITY;
 
     public WrongInputDataException(String message) {
-        super(message);
-    }
-
-    public WrongInputDataException(String message, Throwable cause) {
-        super(message, cause);
-    }
-
-    public WrongInputDataException(Throwable cause) {
-        super(cause);
-    }
-
-    @Override
-    public HttpStatus getRelatedStatus() {
-        return HttpStatus.BAD_REQUEST;
-    }
-
-    @Override
-    public ErrorResponse getRelatedResponse() {
-        return new ErrorResponse(getRelatedStatus().value(), this.getMessage());
+        super(message, HTTP_STATUS);
     }
 }

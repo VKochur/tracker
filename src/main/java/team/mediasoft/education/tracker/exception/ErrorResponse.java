@@ -6,8 +6,6 @@ public class ErrorResponse {
 
     private final String reasonPhrase;
 
-    private String message;
-
     public ErrorResponse(int code, String reasonPhrase) {
         this.code = code;
         this.reasonPhrase = reasonPhrase;
@@ -16,7 +14,6 @@ public class ErrorResponse {
     public ErrorResponse(int code, String reasonPhrase, String message) {
         this.code = code;
         this.reasonPhrase = reasonPhrase;
-        this.message = message;
     }
 
     public int getCode() {
@@ -25,9 +22,5 @@ public class ErrorResponse {
 
     public String getReasonPhrase() {
         return reasonPhrase;
-    }
-
-    public String getMessage() {
-        return message;
     }
 }
