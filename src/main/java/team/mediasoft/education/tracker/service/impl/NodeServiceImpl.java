@@ -2,12 +2,14 @@ package team.mediasoft.education.tracker.service.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
 import team.mediasoft.education.tracker.dto.NodeInput;
 import team.mediasoft.education.tracker.dto.NodeOutput;
 import team.mediasoft.education.tracker.dto.mapper.Mapper;
 import team.mediasoft.education.tracker.entity.Node;
 import team.mediasoft.education.tracker.exception.SurfaceException;
+import team.mediasoft.education.tracker.exception.tree.inner.NotSupportedException;
 import team.mediasoft.education.tracker.exception.tree.request.NotUniqueDataException;
 import team.mediasoft.education.tracker.repository.NodeRepository;
 import team.mediasoft.education.tracker.service.NodeService;
@@ -27,6 +29,35 @@ public class NodeServiceImpl implements NodeService {
 
     private Mapper<Node, NodeOutput, NodeInput> mapper;
 
+    @Override
+    public Optional<Node> getByPostcode(String postcode) {
+        return nodeRepository.findByPostcode(postcode);
+    }
+
+    @Override
+    public SurfaceException checkCreateAbility(NodeInput forCreation) {
+        Optional<Node> byPostcode = nodeRepository.findByPostcode(forCreation.getPostcode());
+        if (byPostcode.isPresent()) {
+            return new NotUniqueDataException("node with postcode  = \"" + byPostcode.get().getPostcode() + "\" existed yet");
+        }
+        return null;
+    }
+
+    @Override
+    public Wrap<Node, SurfaceException> deleteById(Long aLong) {
+        return wrapFactory.ofFail(new NotSupportedException("delete node not supported"));
+    }
+
+    @Override
+    public SurfaceException checkDeleteAbility(Long aLong) {
+        return new NotSupportedException("check ability to delete node by id not supported");
+    }
+
+    @Override
+    public List<Node> getNodesByPostcodeStartsWith(String postcode, Pageable pageable) {
+        return nodeRepository.findByPostcodeStartingWithOrderByPostcode(postcode, pageable);
+    }
+
     @Autowired
     public void setWrapFactory(WrapFactory<Node, SurfaceException> wrapFactory) {
         this.wrapFactory = wrapFactory;
@@ -43,36 +74,17 @@ public class NodeServiceImpl implements NodeService {
     }
 
     @Override
-    public Optional<Node> getById(Long id) {
-        return nodeRepository.findById(id);
+    public WrapFactory<Node, SurfaceException> wrapFactory() {
+        return wrapFactory;
     }
 
     @Override
-    public Optional<Node> getByPostcode(String postcode) {
-        return nodeRepository.findByPostcode(postcode);
+    public JpaRepository<Node, Long> jpaRepository() {
+        return nodeRepository;
     }
 
     @Override
-    public Wrap<Node, SurfaceException> create(NodeInput forCreation) {
-        SurfaceException exception = checkCreateAbility(forCreation);
-        if (exception != null) {
-            return wrapFactory.ofFail(exception);
-        } else {
-            Node forSave = mapper.getForCreation(forCreation);
-            return wrapFactory.ofSuccess(nodeRepository.save(forSave));
-        }
-    }
-
-    private SurfaceException checkCreateAbility(NodeInput forCreation) {
-        Optional<Node> byPostcode = nodeRepository.findByPostcode(forCreation.getPostcode());
-        if (byPostcode.isPresent()) {
-            return new NotUniqueDataException("node with postcode  = \"" + byPostcode.get().getPostcode() + "\" existed yet");
-        }
-        return null;
-    }
-
-    @Override
-    public List<Node> getNodesByPostcodeStartsWith(String postcode, Pageable pageable) {
-        return nodeRepository.findByPostcodeStartingWithOrderByPostcode(postcode, pageable);
+    public Mapper<Node, NodeOutput, NodeInput> dtoMapper() {
+        return mapper;
     }
 }

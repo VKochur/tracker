@@ -14,55 +14,48 @@ import java.util.Optional;
  * @param <E> entity
  * @param <D> dto output
  * @param <I> dto input
- * @param <M> mapper
  */
-public abstract class BasicService<ID, E, D, I, M> {
+public interface BasicService<ID, E, D, I> {
 
-    private final WrapFactory<E, SurfaceException> wrapFactory;
+    WrapFactory<E, SurfaceException> wrapFactory();
 
-    private JpaRepository<E, ID> jpaRepository;
+    JpaRepository<E, ID> jpaRepository();
 
-    private Mapper<E, D, I> dtoMapper;
+    Mapper<E, D, I> dtoMapper();
 
-    public BasicService(JpaRepository<E, ID> jpaRepository, Mapper<E, D, I> mapper, WrapFactory<E, SurfaceException> wrapFactory) {
-        this.jpaRepository = jpaRepository;
-        this.dtoMapper = mapper;
-        this.wrapFactory = wrapFactory;
+    SurfaceException checkDeleteAbility(ID id);
+
+    SurfaceException checkCreateAbility(I dtoInput);
+
+    default Optional<E> getById(ID id) {
+        return jpaRepository().findById(id);
     }
 
-    public Optional<E> getById(ID id) {
-        return jpaRepository.findById(id);
-    }
-
-    public Wrap<E, SurfaceException> create(I dtoInput) {
+    default Wrap<E, SurfaceException> create(I dtoInput) {
         SurfaceException exception = checkCreateAbility(dtoInput);
         if (exception != null) {
-            return wrapFactory.ofFail(exception);
+            return wrapFactory().ofFail(exception);
         } else {
-            E forCreation = dtoMapper.getForCreation(dtoInput);
-            E saved = jpaRepository.save(forCreation);
-            return wrapFactory.ofSuccess(saved);
+            E forCreation = dtoMapper().getForCreation(dtoInput);
+            E saved = jpaRepository().save(forCreation);
+            return wrapFactory().ofSuccess(saved);
         }
     }
 
-    public Wrap<E, SurfaceException> deleteById(ID id) {
+    default Wrap<E, SurfaceException> deleteById(ID id) {
         SurfaceException exception = checkDeleteAbility(id);
         if (exception != null) {
-            return wrapFactory.ofFail(exception);
+            return wrapFactory().ofFail(exception);
         } else {
-            Optional<E> byId = jpaRepository.findById(id);
+            Optional<E> byId = jpaRepository().findById(id);
             if (byId.isPresent()) {
                 //delete
-                jpaRepository.deleteById(id);
-                return wrapFactory.ofSuccess(byId.get());
+                jpaRepository().deleteById(id);
+                return wrapFactory().ofSuccess(byId.get());
             } else {
-                return wrapFactory.ofFail(new NotExistsDataException("not found by id = " + id));
+                return wrapFactory().ofFail(new NotExistsDataException("not found by id = " + id));
             }
         }
     }
-
-    protected abstract SurfaceException checkDeleteAbility(ID id);
-
-    protected abstract SurfaceException checkCreateAbility(I dtoInput);
 
 }

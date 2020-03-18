@@ -2,6 +2,7 @@ package team.mediasoft.education.tracker.service.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
 import team.mediasoft.education.tracker.dto.TypeInput;
 import team.mediasoft.education.tracker.dto.TypeOutput;
@@ -13,12 +14,10 @@ import team.mediasoft.education.tracker.exception.tree.request.NotExistsDataExce
 import team.mediasoft.education.tracker.exception.tree.request.NotUniqueDataException;
 import team.mediasoft.education.tracker.repository.PackRepository;
 import team.mediasoft.education.tracker.repository.TypeRepository;
-import team.mediasoft.education.tracker.service.BasicService;
 import team.mediasoft.education.tracker.service.TypeService;
 import team.mediasoft.education.tracker.support.Wrap;
 import team.mediasoft.education.tracker.support.WrapFactory;
 
-import javax.annotation.PostConstruct;
 import javax.transaction.Transactional;
 import java.util.List;
 import java.util.Optional;
@@ -34,86 +33,42 @@ public class TypeServiceImpl implements TypeService {
 
     private Mapper<Type, TypeOutput, TypeInput> mapper;
 
-    private BasicService<Long, Type, TypeOutput, TypeInput,
-            Mapper<Type, TypeOutput, TypeInput>> basicService;
-
-    @Autowired
-    public void setWrapFactory(WrapFactory<Type, SurfaceException> wrapFactory) {
-        this.wrapFactory = wrapFactory;
-    }
-
-    @Autowired
-    public void setTypeRepository(TypeRepository typeRepository) {
-        this.typeRepository = typeRepository;
-    }
-
-    @Autowired
-    public void setPackRepository(PackRepository packRepository) {
-        this.packRepository = packRepository;
-    }
-
-    @Autowired
-    public void setMapper(Mapper<Type, TypeOutput, TypeInput> mapper) {
-        this.mapper = mapper;
-    }
-
-    @PostConstruct
-    public void initBasicService() {
-
-        final TypeService typeService = this;
-
-        basicService = new BasicService<Long, Type, TypeOutput, TypeInput, Mapper<Type, TypeOutput, TypeInput>>(
-                typeRepository, mapper, wrapFactory
-        ) {
-
-            public SurfaceException checkCreateAbility(TypeInput forCreation) {
-                String typeName = forCreation.getName();
-                Optional<Long> idByName = typeService.getIdByNameIgnoreCase(typeName);
-                if (idByName.isPresent()) {
-                    return new NotUniqueDataException("type \"" + typeName + "\" exists yet (differences may be in case of letters only)");
-                }
-
-                return null;
-            }
-
-            /**
-             * Checks exists entity, relations to others entities and other
-             *
-             * @param id
-             * @return if null, it is ok, or exception
-             */
-            public SurfaceException checkDeleteAbility(Long id) {
-
-                Optional<Type> type = typeRepository.findById(id);
-                //check exists
-                if (!type.isPresent()) {
-                    return new NotExistsDataException("not found type by id = " + id);
-                }
-
-                //check fk constrain
-                if (packRepository.existsPackByType(type.get())) {
-                    return new FailForeignConstraintException("related packs existed");
-                }
-
-                return null;
-            }
-
-        };
-    }
-
     @Override
-    public Optional<Type> getById(Long id) {
-        return basicService.getById(id);
+    public SurfaceException checkCreateAbility(TypeInput forCreation) {
+        String typeName = forCreation.getName();
+        Optional<Long> idByName = this.getIdByNameIgnoreCase(typeName);
+        if (idByName.isPresent()) {
+            return new NotUniqueDataException("type \"" + typeName + "\" exists yet (differences may be in case of letters only)");
+        }
+
+        return null;
+    }
+
+    /**
+     * Checks exists entity, relations to others entities and other
+     *
+     * @param id
+     * @return if null, it is ok, or exception
+     */
+    public SurfaceException checkDeleteAbility(Long id) {
+
+        Optional<Type> type = typeRepository.findById(id);
+        //check exists
+        if (!type.isPresent()) {
+            return new NotExistsDataException("not found type by id = " + id);
+        }
+
+        //check fk constrain
+        if (packRepository.existsPackByType(type.get())) {
+            return new FailForeignConstraintException("related packs existed");
+        }
+
+        return null;
     }
 
     @Override
     public Optional<Long> getIdByNameIgnoreCase(String typeName) {
         return typeRepository.findIdByNameIgnoreCase(typeName);
-    }
-
-    @Override
-    public Wrap<Type, SurfaceException> create(TypeInput forCreation) {
-        return basicService.create(forCreation);
     }
 
     @Transactional
@@ -135,12 +90,46 @@ public class TypeServiceImpl implements TypeService {
     }
 
     @Override
-    public Wrap<Type, SurfaceException> deleteById(Long id) {
-        return basicService.deleteById(id);
-    }
-
-    @Override
     public List<Type> getAllTypesOrderByName(boolean asc) {
         return typeRepository.findAll(Sort.by(new Sort.Order((asc) ? Sort.Direction.ASC : Sort.Direction.DESC, "name")));
     }
+
+    @Autowired
+    public void setWrapFactory(WrapFactory<Type, SurfaceException> wrapFactory) {
+        this.wrapFactory = wrapFactory;
+    }
+
+    @Autowired
+    public void setTypeRepository(TypeRepository typeRepository) {
+        this.typeRepository = typeRepository;
+    }
+
+    @Autowired
+    public void setPackRepository(PackRepository packRepository) {
+        this.packRepository = packRepository;
+    }
+
+    @Autowired
+    public void setMapper(Mapper<Type, TypeOutput, TypeInput> mapper) {
+        this.mapper = mapper;
+    }
+
+    @Override
+    public WrapFactory<Type, SurfaceException> wrapFactory() {
+        return wrapFactory;
+    }
+
+    @Override
+    public JpaRepository<Type, Long> jpaRepository() {
+        return typeRepository;
+    }
+
+    @Override
+    public Mapper<Type, TypeOutput, TypeInput> dtoMapper() {
+        return mapper;
+    }
+
+
+
+
 }
