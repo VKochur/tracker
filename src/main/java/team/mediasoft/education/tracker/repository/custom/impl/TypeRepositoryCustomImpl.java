@@ -14,11 +14,12 @@ public class TypeRepositoryCustomImpl implements TypeRepositoryCustom {
     @PersistenceContext
     private EntityManager em;
 
+
     @Override
     public Optional<Long> findIdByNameIgnoreCase(String typeName) {
         String sql =
                 "select id from types " +
-                "where UPPER(name) = UPPER(:typeName)";
+                        "where UPPER(name) = UPPER(:typeName)";
         Query nativeQuery = em.createNativeQuery(sql);
         nativeQuery.setParameter("typeName", typeName);
 
@@ -29,4 +30,6 @@ public class TypeRepositoryCustomImpl implements TypeRepositoryCustom {
             return Optional.empty();
         }
     }
+
+
 }

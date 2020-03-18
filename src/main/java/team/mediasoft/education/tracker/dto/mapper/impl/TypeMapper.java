@@ -15,12 +15,4 @@ public class TypeMapper implements Mapper<Type, TypeDto> {
         typeDto.setName(entity.getName());
         return typeDto;
     }
-
-    @Override
-    public Type getEntity(TypeDto dto) {
-        Type type = new Type();
-        type.setId(dto.getId());
-        type.setName(dto.getName());
-        return type;
-    }
 }

@@ -10,6 +10,7 @@ import team.mediasoft.education.tracker.exception.SurfaceException;
 import team.mediasoft.education.tracker.exception.tree.request.FailForeignConstraintException;
 import team.mediasoft.education.tracker.exception.tree.request.NotExistsDataException;
 import team.mediasoft.education.tracker.exception.tree.request.NotUniqueDataException;
+import team.mediasoft.education.tracker.repository.PackRepository;
 import team.mediasoft.education.tracker.repository.TypeRepository;
 import team.mediasoft.education.tracker.service.TypeService;
 import team.mediasoft.education.tracker.support.Wrap;
@@ -28,6 +29,8 @@ public class TypeServiceImpl implements TypeService {
 
     private WrapFactory<TypeDto, SurfaceException> wrapFactory;
 
+    private PackRepository packRepository;
+
     @Autowired
     public void setWrapFactory(WrapFactory<TypeDto, SurfaceException> wrapFactory) {
         this.wrapFactory = wrapFactory;
@@ -41,6 +44,11 @@ public class TypeServiceImpl implements TypeService {
     @Autowired
     public void setTypeRepository(TypeRepository typeRepository) {
         this.typeRepository = typeRepository;
+    }
+
+    @Autowired
+    public void setPackRepository(PackRepository packRepository) {
+        this.packRepository = packRepository;
     }
 
     @Override
@@ -87,7 +95,7 @@ public class TypeServiceImpl implements TypeService {
 
     @Override
     public Wrap<TypeDto, SurfaceException> deleteById(Long id) {
-        SurfaceException constraintException = checkAbilityDelete(id);
+        SurfaceException constraintException = checkDeleteAbility(id);
         if (constraintException == null) {
             Optional<Type> forDelete = typeRepository.findById(id);
             //delete
@@ -100,20 +108,21 @@ public class TypeServiceImpl implements TypeService {
 
     /**
      *
+     * Checks exists entity, relations to others entities and other
      * @param id
      * @return if null, it is ok, or exception
      */
-    private SurfaceException checkAbilityDelete(Long id) {
+    private SurfaceException checkDeleteAbility(Long id) {
 
+        Optional<Type> type = typeRepository.findById(id);
         //check exists
-        if (!typeRepository.existsById(id)) {
+        if (!type.isPresent()) {
             return new NotExistsDataException("not found type by id = " + id);
         }
 
         //check fk constrain
-        //todo
-        if (id == 82) {
-            return new FailForeignConstraintException("type with id = " + id + "has relations");
+        if (packRepository.existsPackByType(type.get())) {
+            return new FailForeignConstraintException("related packs existed");
         }
 
         return null;

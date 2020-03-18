@@ -13,8 +13,6 @@ public interface Mapper<E, D> {
 
     D getDto(E entity);
 
-    E getEntity(D dto);
-
     default List<D> getListDto(List<E> entities) {
         List<D> dtos = new ArrayList<>(entities.size());
         for (E entity : entities) {
