@@ -13,10 +13,12 @@ import team.mediasoft.education.tracker.exception.tree.request.NotExistsDataExce
 import team.mediasoft.education.tracker.exception.tree.request.NotUniqueDataException;
 import team.mediasoft.education.tracker.repository.PackRepository;
 import team.mediasoft.education.tracker.repository.TypeRepository;
+import team.mediasoft.education.tracker.service.BasicService;
 import team.mediasoft.education.tracker.service.TypeService;
 import team.mediasoft.education.tracker.support.Wrap;
 import team.mediasoft.education.tracker.support.WrapFactory;
 
+import javax.annotation.PostConstruct;
 import javax.transaction.Transactional;
 import java.util.List;
 import java.util.Optional;
@@ -31,6 +33,9 @@ public class TypeServiceImpl implements TypeService {
     private PackRepository packRepository;
 
     private Mapper<Type, TypeOutput, TypeInput> mapper;
+
+    private BasicService<Long, Type, TypeOutput, TypeInput,
+            Mapper<Type, TypeOutput, TypeInput>> basicService;
 
     @Autowired
     public void setWrapFactory(WrapFactory<Type, SurfaceException> wrapFactory) {
@@ -52,9 +57,53 @@ public class TypeServiceImpl implements TypeService {
         this.mapper = mapper;
     }
 
+    @PostConstruct
+    public void initBasicService() {
+
+        final TypeService typeService = this;
+
+        basicService = new BasicService<Long, Type, TypeOutput, TypeInput, Mapper<Type, TypeOutput, TypeInput>>(
+                typeRepository, mapper, wrapFactory
+        ) {
+
+            public SurfaceException checkCreateAbility(TypeInput forCreation) {
+                String typeName = forCreation.getName();
+                Optional<Long> idByName = typeService.getIdByNameIgnoreCase(typeName);
+                if (idByName.isPresent()) {
+                    return new NotUniqueDataException("type \"" + typeName + "\" exists yet (differences may be in case of letters only)");
+                }
+
+                return null;
+            }
+
+            /**
+             * Checks exists entity, relations to others entities and other
+             *
+             * @param id
+             * @return if null, it is ok, or exception
+             */
+            public SurfaceException checkDeleteAbility(Long id) {
+
+                Optional<Type> type = typeRepository.findById(id);
+                //check exists
+                if (!type.isPresent()) {
+                    return new NotExistsDataException("not found type by id = " + id);
+                }
+
+                //check fk constrain
+                if (packRepository.existsPackByType(type.get())) {
+                    return new FailForeignConstraintException("related packs existed");
+                }
+
+                return null;
+            }
+
+        };
+    }
+
     @Override
     public Optional<Type> getById(Long id) {
-        return typeRepository.findById(id);
+        return basicService.getById(id);
     }
 
     @Override
@@ -64,23 +113,7 @@ public class TypeServiceImpl implements TypeService {
 
     @Override
     public Wrap<Type, SurfaceException> create(TypeInput forCreation) {
-        SurfaceException exception = checkCreateAbility(forCreation);
-        if (exception != null) {
-            return wrapFactory.ofFail(exception);
-        } else {
-            Type forSave = mapper.getForCreation(forCreation);
-            return wrapFactory.ofSuccess(typeRepository.save(forSave));
-        }
-    }
-
-    private SurfaceException checkCreateAbility(TypeInput forCreation) {
-        String typeName = forCreation.getName();
-        Optional<Long> idByName = this.getIdByNameIgnoreCase(typeName);
-        if (idByName.isPresent()) {
-            return new NotUniqueDataException("type \"" + typeName +"\" exists yet (differences may be in case of letters only)");
-        }
-
-        return null;
+        return basicService.create(forCreation);
     }
 
     @Transactional
@@ -94,7 +127,7 @@ public class TypeServiceImpl implements TypeService {
                 typeInDb.setName(newName);
                 return wrapFactory.ofSuccess(typeInDb);
             } else {
-                return wrapFactory.ofFail(new NotUniqueDataException("type \"" + newName +"\" exists yet (differences may be in case of letters only)"));
+                return wrapFactory.ofFail(new NotUniqueDataException("type \"" + newName + "\" exists yet (differences may be in case of letters only)"));
             }
         } else {
             return wrapFactory.ofFail(new NotExistsDataException("not found type by id = " + id));
@@ -103,37 +136,7 @@ public class TypeServiceImpl implements TypeService {
 
     @Override
     public Wrap<Type, SurfaceException> deleteById(Long id) {
-        SurfaceException constraintException = checkDeleteAbility(id);
-        if (constraintException == null) {
-            Optional<Type> forDelete = typeRepository.findById(id);
-            //delete
-            typeRepository.deleteById(id);
-            return wrapFactory.ofSuccess(forDelete.get());
-        } else {
-            return wrapFactory.ofFail(constraintException);
-        }
-    }
-
-    /**
-     *
-     * Checks exists entity, relations to others entities and other
-     * @param id
-     * @return if null, it is ok, or exception
-     */
-    private SurfaceException checkDeleteAbility(Long id) {
-
-        Optional<Type> type = typeRepository.findById(id);
-        //check exists
-        if (!type.isPresent()) {
-            return new NotExistsDataException("not found type by id = " + id);
-        }
-
-        //check fk constrain
-        if (packRepository.existsPackByType(type.get())) {
-            return new FailForeignConstraintException("related packs existed");
-        }
-
-        return null;
+        return basicService.deleteById(id);
     }
 
     @Override
