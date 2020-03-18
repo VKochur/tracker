@@ -3,7 +3,8 @@ package team.mediasoft.education.tracker.service.impl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import team.mediasoft.education.tracker.dto.NodeDto;
+import team.mediasoft.education.tracker.dto.NodeInput;
+import team.mediasoft.education.tracker.dto.NodeOutput;
 import team.mediasoft.education.tracker.dto.mapper.Mapper;
 import team.mediasoft.education.tracker.entity.Node;
 import team.mediasoft.education.tracker.exception.SurfaceException;
@@ -22,12 +23,12 @@ public class NodeServiceImpl implements NodeService {
 
     private NodeRepository nodeRepository;
 
-    private Mapper<Node, NodeDto> dtoMapper;
+    private WrapFactory<Node, SurfaceException> wrapFactory;
 
-    private WrapFactory<NodeDto, SurfaceException> wrapFactory;
+    private Mapper<Node, NodeOutput, NodeInput> mapper;
 
     @Autowired
-    public void setWrapFactory(WrapFactory<NodeDto, SurfaceException> wrapFactory) {
+    public void setWrapFactory(WrapFactory<Node, SurfaceException> wrapFactory) {
         this.wrapFactory = wrapFactory;
     }
 
@@ -37,36 +38,32 @@ public class NodeServiceImpl implements NodeService {
     }
 
     @Autowired
-    public void setDtoMapper(Mapper<Node, NodeDto> dtoMapper) {
-        this.dtoMapper = dtoMapper;
+    public void setMapper(Mapper<Node, NodeOutput, NodeInput> mapper) {
+        this.mapper = mapper;
     }
 
     @Override
-    public Optional<NodeDto> getById(Long id) {
-        Optional<Node> byId = nodeRepository.findById(id);
-        return dtoMapper.getDto(byId);
+    public Optional<Node> getById(Long id) {
+        return nodeRepository.findById(id);
     }
 
     @Override
-    public Optional<NodeDto> getByPostcode(String postcode) {
-        Optional<Node> byPostcode = nodeRepository.findByPostcode(postcode);
-        return dtoMapper.getDto(byPostcode);
+    public Optional<Node> getByPostcode(String postcode) {
+        return nodeRepository.findByPostcode(postcode);
     }
 
     @Override
-    public Wrap<NodeDto, SurfaceException> create(NodeDto forCreation) {
+    public Wrap<Node, SurfaceException> create(NodeInput forCreation) {
         SurfaceException exception = checkCreateAbility(forCreation);
         if (exception != null) {
             return wrapFactory.ofFail(exception);
         } else {
-            Node newNode = new Node();
-            newNode.setName(forCreation.getName());
-            newNode.setPostcode(forCreation.getPostcode());
-            return wrapFactory.ofSuccess(dtoMapper.getDto(nodeRepository.save(newNode)));
+            Node forSave = mapper.getForCreation(forCreation);
+            return wrapFactory.ofSuccess(nodeRepository.save(forSave));
         }
     }
 
-    private SurfaceException checkCreateAbility(NodeDto forCreation) {
+    private SurfaceException checkCreateAbility(NodeInput forCreation) {
         Optional<Node> byPostcode = nodeRepository.findByPostcode(forCreation.getPostcode());
         if (byPostcode.isPresent()) {
             return new NotUniqueDataException("node with postcode  = \"" + byPostcode.get().getPostcode() + "\" existed yet");
@@ -75,8 +72,7 @@ public class NodeServiceImpl implements NodeService {
     }
 
     @Override
-    public List<NodeDto> getNodesByPostcodeStartsWith(String postcode, Pageable pageable) {
-        List<Node> byPostcodeStartingWithOrderByPostcode = nodeRepository.findByPostcodeStartingWithOrderByPostcode(postcode, pageable);
-        return dtoMapper.getListDto(byPostcodeStartingWithOrderByPostcode);
+    public List<Node> getNodesByPostcodeStartsWith(String postcode, Pageable pageable) {
+        return nodeRepository.findByPostcodeStartingWithOrderByPostcode(postcode, pageable);
     }
 }

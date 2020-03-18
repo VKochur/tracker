@@ -1,8 +1,11 @@
-package team.mediasoft.education.tracker.api.rest.type;
+package team.mediasoft.education.tracker.api.rest;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import team.mediasoft.education.tracker.dto.TypeDto;
+import team.mediasoft.education.tracker.dto.TypeInput;
+import team.mediasoft.education.tracker.dto.TypeOutput;
+import team.mediasoft.education.tracker.dto.mapper.Mapper;
+import team.mediasoft.education.tracker.entity.Type;
 import team.mediasoft.education.tracker.exception.SurfaceException;
 import team.mediasoft.education.tracker.exception.tree.request.NotExistsDataException;
 import team.mediasoft.education.tracker.service.TypeService;
@@ -17,17 +20,24 @@ public class TypeRest {
 
     private TypeService typeService;
 
+    private Mapper<Type, TypeOutput, TypeInput> mapper;
+
     @Autowired
     public void setTypeService(TypeService typeService) {
         this.typeService = typeService;
     }
 
+    @Autowired
+    public void setMapper(Mapper<Type, TypeOutput, TypeInput> mapper) {
+        this.mapper = mapper;
+    }
+
     @GetMapping(value = "/{id}", produces = "application/json;charset=utf-8")
     @ResponseBody
-    public TypeDto getById(@PathVariable(name = "id") Long id) throws NotExistsDataException {
-        Optional<TypeDto> byId = typeService.getById(id);
+    public TypeOutput getById(@PathVariable(name = "id") Long id) throws NotExistsDataException {
+        Optional<Type> byId = typeService.getById(id);
         if (byId.isPresent()) {
-            return byId.get();
+            return mapper.getOutput(byId.get());
         } else {
             throw new NotExistsDataException("type not found. id = " + id);
         }
@@ -44,30 +54,29 @@ public class TypeRest {
         }
     }
 
-    @PostMapping(value = "{typeName}", produces = "application/json;charset=utf-8")
+    @PostMapping(produces = "application/json;charset=utf-8", consumes = "application/json;charset=utf-8")
     @ResponseBody
-    public TypeDto createType(@PathVariable(name = "typeName") String typeName) throws SurfaceException {
-        Wrap<TypeDto, SurfaceException> typeDtoWrap = typeService.create(typeName);
-        return typeDtoWrap.getValueOrElseThrow();
+    public TypeOutput createType(@RequestBody TypeInput typeInput) throws SurfaceException {
+        Wrap<Type, SurfaceException> typeDtoWrap = typeService.create(typeInput);
+        return mapper.getOutput(typeDtoWrap.getValueOrElseThrow());
     }
 
     @PutMapping(value = "/{id}/{newName}}", produces = "application/json;charset=utf-8")
-    public TypeDto updateName(@PathVariable(name = "id") Long id, @PathVariable(name = "newName") String name) throws SurfaceException {
-        Wrap<TypeDto, SurfaceException> typeDtoWrap = typeService.updateName(id, name);
-        return typeDtoWrap.getValueOrElseThrow();
+    public TypeOutput updateName(@PathVariable(name = "id") Long id, @PathVariable(name = "newName") String name) throws SurfaceException {
+        Wrap<Type, SurfaceException> typeDtoWrap = typeService.updateName(id, name);
+        return mapper.getOutput(typeDtoWrap.getValueOrElseThrow());
     }
 
     @DeleteMapping(value = "/{id}", produces = "application/json;charset=utf-8")
     @ResponseBody
-    public TypeDto deleteById(@PathVariable(name = "id") Long id) throws SurfaceException {
-        Wrap<TypeDto, SurfaceException> typeDtoWrap = typeService.deleteById(id);
-        return typeDtoWrap.getValueOrElseThrow();
+    public TypeOutput deleteById(@PathVariable(name = "id") Long id) throws SurfaceException {
+        Wrap<Type, SurfaceException> typeDtoWrap = typeService.deleteById(id);
+        return mapper.getOutput(typeDtoWrap.getValueOrElseThrow());
     }
 
     @GetMapping(produces = "application/json;charset=utf-8")
     @ResponseBody
-    public List<TypeDto> findAll() {
-        return typeService.getAllTypesOrderByName(true);
+    public List<TypeOutput> findAll() {
+        return mapper.getListOutputs(typeService.getAllTypesOrderByName(true));
     }
-
 }

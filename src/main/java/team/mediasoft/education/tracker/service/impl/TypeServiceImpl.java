@@ -3,7 +3,8 @@ package team.mediasoft.education.tracker.service.impl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import team.mediasoft.education.tracker.dto.TypeDto;
+import team.mediasoft.education.tracker.dto.TypeInput;
+import team.mediasoft.education.tracker.dto.TypeOutput;
 import team.mediasoft.education.tracker.dto.mapper.Mapper;
 import team.mediasoft.education.tracker.entity.Type;
 import team.mediasoft.education.tracker.exception.SurfaceException;
@@ -25,20 +26,15 @@ public class TypeServiceImpl implements TypeService {
 
     private TypeRepository typeRepository;
 
-    private Mapper<Type, TypeDto> dtoMapper;
-
-    private WrapFactory<TypeDto, SurfaceException> wrapFactory;
+    private WrapFactory<Type, SurfaceException> wrapFactory;
 
     private PackRepository packRepository;
 
-    @Autowired
-    public void setWrapFactory(WrapFactory<TypeDto, SurfaceException> wrapFactory) {
-        this.wrapFactory = wrapFactory;
-    }
+    private Mapper<Type, TypeOutput, TypeInput> mapper;
 
     @Autowired
-    public void setDtoMapper(Mapper<Type, TypeDto> dtoMapper) {
-        this.dtoMapper = dtoMapper;
+    public void setWrapFactory(WrapFactory<Type, SurfaceException> wrapFactory) {
+        this.wrapFactory = wrapFactory;
     }
 
     @Autowired
@@ -51,10 +47,14 @@ public class TypeServiceImpl implements TypeService {
         this.packRepository = packRepository;
     }
 
+    @Autowired
+    public void setMapper(Mapper<Type, TypeOutput, TypeInput> mapper) {
+        this.mapper = mapper;
+    }
+
     @Override
-    public Optional<TypeDto> getById(Long id) {
-        Optional<Type> byId = typeRepository.findById(id);
-        return dtoMapper.getDto(byId);
+    public Optional<Type> getById(Long id) {
+        return typeRepository.findById(id);
     }
 
     @Override
@@ -63,28 +63,36 @@ public class TypeServiceImpl implements TypeService {
     }
 
     @Override
-    public Wrap<TypeDto, SurfaceException> create(String typeName) {
-        Optional<Long> idByName = this.getIdByNameIgnoreCase(typeName);
-        if (!idByName.isPresent()) {
-            Type typeForCreation = new Type();
-            typeForCreation.setName(typeName);
-            Type created = typeRepository.save(typeForCreation);
-            return wrapFactory.ofSuccess(dtoMapper.getDto(created));
+    public Wrap<Type, SurfaceException> create(TypeInput forCreation) {
+        SurfaceException exception = checkCreateAbility(forCreation);
+        if (exception != null) {
+            return wrapFactory.ofFail(exception);
         } else {
-            return wrapFactory.ofFail(new NotUniqueDataException("type \"" + typeName +"\" exists yet (differences may be in case of letters only)"));
+            Type forSave = mapper.getForCreation(forCreation);
+            return wrapFactory.ofSuccess(typeRepository.save(forSave));
         }
+    }
+
+    private SurfaceException checkCreateAbility(TypeInput forCreation) {
+        String typeName = forCreation.getName();
+        Optional<Long> idByName = this.getIdByNameIgnoreCase(typeName);
+        if (idByName.isPresent()) {
+            return new NotUniqueDataException("type \"" + typeName +"\" exists yet (differences may be in case of letters only)");
+        }
+
+        return null;
     }
 
     @Transactional
     @Override
-    public Wrap<TypeDto, SurfaceException> updateName(Long id, String newName) {
+    public Wrap<Type, SurfaceException> updateName(Long id, String newName) {
         Optional<Type> withOldNameInDb = typeRepository.findById(id);
         if (withOldNameInDb.isPresent()) {
             Optional<Long> withNewNameInDb = typeRepository.findIdByNameIgnoreCase(newName);
             if (!withNewNameInDb.isPresent() || (withNewNameInDb.get().equals(id))) {
                 Type typeInDb = withOldNameInDb.get();
                 typeInDb.setName(newName);
-                return wrapFactory.ofSuccess(dtoMapper.getDto(typeInDb));
+                return wrapFactory.ofSuccess(typeInDb);
             } else {
                 return wrapFactory.ofFail(new NotUniqueDataException("type \"" + newName +"\" exists yet (differences may be in case of letters only)"));
             }
@@ -94,13 +102,13 @@ public class TypeServiceImpl implements TypeService {
     }
 
     @Override
-    public Wrap<TypeDto, SurfaceException> deleteById(Long id) {
+    public Wrap<Type, SurfaceException> deleteById(Long id) {
         SurfaceException constraintException = checkDeleteAbility(id);
         if (constraintException == null) {
             Optional<Type> forDelete = typeRepository.findById(id);
             //delete
             typeRepository.deleteById(id);
-            return wrapFactory.ofSuccess(dtoMapper.getDto(forDelete.get()));
+            return wrapFactory.ofSuccess(forDelete.get());
         } else {
             return wrapFactory.ofFail(constraintException);
         }
@@ -129,8 +137,7 @@ public class TypeServiceImpl implements TypeService {
     }
 
     @Override
-    public List<TypeDto> getAllTypesOrderByName(boolean asc) {
-        List<Type> types = typeRepository.findAll(Sort.by(new Sort.Order((asc) ? Sort.Direction.ASC : Sort.Direction.DESC, "name")));
-        return dtoMapper.getListDto(types);
+    public List<Type> getAllTypesOrderByName(boolean asc) {
+        return typeRepository.findAll(Sort.by(new Sort.Order((asc) ? Sort.Direction.ASC : Sort.Direction.DESC, "name")));
     }
 }

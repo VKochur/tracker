@@ -1,6 +1,6 @@
 package team.mediasoft.education.tracker.dto;
 
-public class NodeDto {
+public class NodeOutput {
 
     private Long id;
     private String postcode;
