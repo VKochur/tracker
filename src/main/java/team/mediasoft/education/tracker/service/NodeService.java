@@ -2,7 +2,6 @@ package team.mediasoft.education.tracker.service;
 
 import org.springframework.data.domain.Pageable;
 import team.mediasoft.education.tracker.dto.NodeInput;
-import team.mediasoft.education.tracker.dto.NodeOutput;
 import team.mediasoft.education.tracker.entity.Node;
 
 
@@ -11,7 +10,7 @@ import java.util.Optional;
 
 
 public interface NodeService
-        extends BasicService<Long, Node, NodeOutput, NodeInput>{
+        extends BasicService<Long, Node, NodeInput>{
 
     /**
      *

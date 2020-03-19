@@ -4,7 +4,6 @@ import org.springframework.stereotype.Component;
 import team.mediasoft.education.tracker.dto.PackInput;
 import team.mediasoft.education.tracker.dto.PackOutput;
 import team.mediasoft.education.tracker.dto.mapper.Mapper;
-import team.mediasoft.education.tracker.entity.Node;
 import team.mediasoft.education.tracker.entity.Pack;
 import team.mediasoft.education.tracker.entity.StoryPoint;
 
@@ -32,17 +31,4 @@ public class PackMapper implements Mapper<Pack, PackOutput, PackInput> {
         return storyPoints.stream().map(storyPoint -> storyPoint.getId()).collect(Collectors.toList());
     }
 
-    @Override
-    public Pack getForCreation(PackInput entityInput) {
-        Pack forCreation = new Pack();
-        forCreation.setIdentifier(entityInput.getIdentifier());
-        forCreation.setRecipient(entityInput.getRecipient());
-
-        Node destination = new Node();
-        destination.setId(entityInput.getNodeId());
-        forCreation.setDestination(destination);
-
-        forCreation.setType(entityInput.getType());
-        return forCreation;
-    }
 }

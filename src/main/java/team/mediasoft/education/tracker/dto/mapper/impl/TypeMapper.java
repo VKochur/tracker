@@ -10,13 +10,6 @@ import team.mediasoft.education.tracker.entity.Type;
 public class TypeMapper implements Mapper<Type, TypeOutput, TypeInput> {
 
     @Override
-    public Type getForCreation(TypeInput entityInput) {
-        Type type = new Type();
-        type.setName(entityInput.getName());
-        return type;
-    }
-
-    @Override
     public TypeOutput getOutput(Type entity) {
         TypeOutput typeOutput = new TypeOutput();
         typeOutput.setId(entity.getId());

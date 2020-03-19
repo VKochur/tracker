@@ -10,14 +10,6 @@ import team.mediasoft.education.tracker.entity.Node;
 public class NodeMapper implements Mapper<Node, NodeOutput, NodeInput> {
 
     @Override
-    public Node getForCreation(NodeInput entityInput) {
-        Node node = new Node();
-        node.setName(entityInput.getName());
-        node.setPostcode(entityInput.getPostcode());
-        return node;
-    }
-
-    @Override
     public NodeOutput getOutput(Node entity) {
         NodeOutput nodeOutput = new NodeOutput();
         nodeOutput.setId(entity.getId());

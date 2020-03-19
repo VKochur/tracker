@@ -1,7 +1,6 @@
 package team.mediasoft.education.tracker.service;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import team.mediasoft.education.tracker.dto.mapper.Mapper;
 import team.mediasoft.education.tracker.exception.SurfaceException;
 import team.mediasoft.education.tracker.exception.tree.request.NotExistsDataException;
 import team.mediasoft.education.tracker.support.Wrap;
@@ -12,23 +11,22 @@ import java.util.Optional;
 /**
  * Basic service.
  *
+ * All operations, that use only jpaRepository's methods, entity's type
+ * are similar for all entities.
+ *
  * Uses:
  *      JpaRepository<E, ID>. In order to work with storage
- *      Mapper<E, D, I>. In order to get entity for creation by entityInput
  *      WrapFactory<E, SurfaceException>. In order to get instance container with entity or exception inside
  *
  * @param <ID> entity's id's type
  * @param <E> entity's type
- * @param <D> output dto's type
  * @param <I> input dto's type
  */
-public interface BasicService<ID, E, D, I> {
+public interface BasicService<ID, E, I> {
 
     WrapFactory<E, SurfaceException> wrapFactory();
 
     JpaRepository<E, ID> jpaRepository();
-
-    Mapper<E, D, I> dtoMapper();
 
     /**
      * Should return exception, if ability for delete entity doesn't exist
@@ -44,20 +42,24 @@ public interface BasicService<ID, E, D, I> {
      */
     SurfaceException checkCreateAbility(I dtoInput);
 
+    /**
+     * Should make entity
+     * that you can pass into jpaRepository.save(forCreation) in order to create new entity
+     *
+     * @param dtoInput
+     * @return
+     */
+    E getEntityForCreationByInput(I dtoInput);
+
     default Optional<E> getById(ID id) {
         return jpaRepository().findById(id);
     }
 
     /**
-     * Create entity into storage
+     * Creates entity into storage
      *
-     * You can use default implementation for creation new entity,
-     * if your mapper makes entity (forCreation = Mapper.getForCreation(entityInput)),
-     * that you can pass into jpaRepository.save(forCreation) in order to create new entity.
-     *
+     * Uses this.getEntityForCreationByInput method's result
      * Checks ability before creation. You have implement checkCreateAbility
-     *
-     * If your mapper can't makes suitable entity by entityInput, you should override this method
      *
      * @param dtoInput
      * @return container, which contains or entity (that was created), or exception with reason why it didn't happen
@@ -67,7 +69,7 @@ public interface BasicService<ID, E, D, I> {
         if (exception != null) {
             return wrapFactory().ofFail(exception);
         } else {
-            E forCreation = dtoMapper().getForCreation(dtoInput);
+            E forCreation = getEntityForCreationByInput(dtoInput);
             E saved = jpaRepository().save(forCreation);
             return wrapFactory().ofSuccess(saved);
         }

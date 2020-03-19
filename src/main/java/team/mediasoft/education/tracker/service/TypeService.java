@@ -1,7 +1,6 @@
 package team.mediasoft.education.tracker.service;
 
 import team.mediasoft.education.tracker.dto.TypeInput;
-import team.mediasoft.education.tracker.dto.TypeOutput;
 import team.mediasoft.education.tracker.entity.Type;
 import team.mediasoft.education.tracker.exception.SurfaceException;
 import team.mediasoft.education.tracker.support.Wrap;
@@ -11,7 +10,7 @@ import java.util.Optional;
 
 
 public interface TypeService
-        extends BasicService<Long, Type, TypeOutput, TypeInput> {
+        extends BasicService<Long, Type, TypeInput> {
 
     /**
      * @param typeName

@@ -4,8 +4,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
 import team.mediasoft.education.tracker.dto.PackInput;
-import team.mediasoft.education.tracker.dto.PackOutput;
-import team.mediasoft.education.tracker.dto.mapper.Mapper;
 import team.mediasoft.education.tracker.entity.Pack;
 import team.mediasoft.education.tracker.exception.SurfaceException;
 import team.mediasoft.education.tracker.exception.tree.inner.NotSupportedException;
@@ -29,12 +27,9 @@ public class PackServiceImpl implements PackService {
 
     private NodeRepository nodeRepository;
 
-    private Mapper<Pack, PackOutput, PackInput> mapper;
-
 
     @Override
-    public Wrap<Pack, SurfaceException> create(PackInput dtoInput) {
-
+    public Pack getEntityForCreationByInput(PackInput dtoInput) {
         return null;
     }
 
@@ -87,11 +82,6 @@ public class PackServiceImpl implements PackService {
     }
 
     @Autowired
-    public void setMapper(Mapper<Pack, PackOutput, PackInput> mapper) {
-        this.mapper = mapper;
-    }
-
-    @Autowired
     public void setPackRepository(PackRepository packRepository) {
         this.packRepository = packRepository;
     }
@@ -106,9 +96,5 @@ public class PackServiceImpl implements PackService {
         return packRepository;
     }
 
-    @Override
-    public Mapper<Pack, PackOutput, PackInput> dtoMapper() {
-        return mapper;
-    }
 
 }

@@ -5,8 +5,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
 import team.mediasoft.education.tracker.dto.NodeInput;
-import team.mediasoft.education.tracker.dto.NodeOutput;
-import team.mediasoft.education.tracker.dto.mapper.Mapper;
 import team.mediasoft.education.tracker.entity.Node;
 import team.mediasoft.education.tracker.exception.SurfaceException;
 import team.mediasoft.education.tracker.exception.tree.inner.NotSupportedException;
@@ -15,7 +13,6 @@ import team.mediasoft.education.tracker.repository.NodeRepository;
 import team.mediasoft.education.tracker.service.NodeService;
 import team.mediasoft.education.tracker.support.Wrap;
 import team.mediasoft.education.tracker.support.WrapFactory;
-
 
 import java.util.List;
 import java.util.Optional;
@@ -26,8 +23,6 @@ public class NodeServiceImpl implements NodeService {
     private NodeRepository nodeRepository;
 
     private WrapFactory<Node, SurfaceException> wrapFactory;
-
-    private Mapper<Node, NodeOutput, NodeInput> mapper;
 
     @Override
     public Optional<Node> getByPostcode(String postcode) {
@@ -41,6 +36,14 @@ public class NodeServiceImpl implements NodeService {
             return new NotUniqueDataException("node with postcode  = \"" + byPostcode.get().getPostcode() + "\" existed yet");
         }
         return null;
+    }
+
+    @Override
+    public Node getEntityForCreationByInput(NodeInput dtoInput) {
+        Node node = new Node();
+        node.setName(dtoInput.getName());
+        node.setPostcode(dtoInput.getPostcode());
+        return node;
     }
 
     @Override
@@ -68,11 +71,6 @@ public class NodeServiceImpl implements NodeService {
         this.nodeRepository = nodeRepository;
     }
 
-    @Autowired
-    public void setMapper(Mapper<Node, NodeOutput, NodeInput> mapper) {
-        this.mapper = mapper;
-    }
-
     @Override
     public WrapFactory<Node, SurfaceException> wrapFactory() {
         return wrapFactory;
@@ -83,8 +81,4 @@ public class NodeServiceImpl implements NodeService {
         return nodeRepository;
     }
 
-    @Override
-    public Mapper<Node, NodeOutput, NodeInput> dtoMapper() {
-        return mapper;
-    }
 }

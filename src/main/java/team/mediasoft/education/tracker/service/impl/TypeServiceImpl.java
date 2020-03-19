@@ -5,8 +5,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
 import team.mediasoft.education.tracker.dto.TypeInput;
-import team.mediasoft.education.tracker.dto.TypeOutput;
-import team.mediasoft.education.tracker.dto.mapper.Mapper;
 import team.mediasoft.education.tracker.entity.Type;
 import team.mediasoft.education.tracker.exception.SurfaceException;
 import team.mediasoft.education.tracker.exception.tree.request.FailForeignConstraintException;
@@ -31,7 +29,12 @@ public class TypeServiceImpl implements TypeService {
 
     private PackRepository packRepository;
 
-    private Mapper<Type, TypeOutput, TypeInput> mapper;
+    @Override
+    public Type getEntityForCreationByInput(TypeInput dtoInput) {
+        Type type = new Type();
+        type.setName(dtoInput.getName());
+        return type;
+    }
 
     @Override
     public SurfaceException checkCreateAbility(TypeInput forCreation) {
@@ -109,11 +112,6 @@ public class TypeServiceImpl implements TypeService {
         this.packRepository = packRepository;
     }
 
-    @Autowired
-    public void setMapper(Mapper<Type, TypeOutput, TypeInput> mapper) {
-        this.mapper = mapper;
-    }
-
     @Override
     public WrapFactory<Type, SurfaceException> wrapFactory() {
         return wrapFactory;
@@ -123,13 +121,5 @@ public class TypeServiceImpl implements TypeService {
     public JpaRepository<Type, Long> jpaRepository() {
         return typeRepository;
     }
-
-    @Override
-    public Mapper<Type, TypeOutput, TypeInput> dtoMapper() {
-        return mapper;
-    }
-
-
-
 
 }
