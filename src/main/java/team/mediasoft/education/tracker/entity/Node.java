@@ -1,15 +1,14 @@
 package team.mediasoft.education.tracker.entity;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 @Entity
 @Table(name = "nodes")
 public class Node {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "node_generator")
+    @SequenceGenerator(name = "node_generator", sequenceName = "node_id_sequence", allocationSize = 5)
     private Long id;
 
     @Column(name = "postcode", unique = true, nullable = false)

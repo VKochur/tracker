@@ -7,9 +7,12 @@ import team.mediasoft.education.tracker.dto.NodeInput;
 import team.mediasoft.education.tracker.dto.NodeOutput;
 import team.mediasoft.education.tracker.dto.mapper.Mapper;
 import team.mediasoft.education.tracker.entity.Node;
+import team.mediasoft.education.tracker.exception.SurfaceException;
+import team.mediasoft.education.tracker.exception.tree.request.NotExistsDataException;
 import team.mediasoft.education.tracker.service.NodeService;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/node")
@@ -29,10 +32,36 @@ public class NodeRest {
         this.mapper = mapper;
     }
 
-    @GetMapping(value = "/{postcode}", params = {"number", "size"})
-    public List<NodeOutput> getPagination(@PathVariable("postcode") String postcode,
-                                          @RequestParam("size") Integer size,
-                                          @RequestParam("number") Integer number) {
-        return mapper.getListOutputs(nodeService.getNodesByPostcodeStartsWith(postcode, PageRequest.of(number, size)));
+    @PostMapping(produces = "application/json;charset=utf-8", consumes = "application/json;charset=utf-8")
+    public NodeOutput createNode(@RequestBody NodeInput nodeInput) throws SurfaceException {
+        return mapper.getOutput(nodeService.create(nodeInput).getValueOrElseThrow());
     }
+
+    @GetMapping(value = "/{id}")
+    public NodeOutput getById(@PathVariable(name = "id") Long id) throws NotExistsDataException {
+        Optional<Node> byId = nodeService.getById(id);
+        if (byId.isPresent()) {
+            return mapper.getOutput(byId.get());
+        } else {
+            throw new NotExistsDataException("node not found. id = " + id);
+        }
+    }
+
+    @GetMapping(value = "/postcode/{postcode}")
+    public NodeOutput getByPostcode(@PathVariable(name = "postcode") String postcode) throws NotExistsDataException {
+        Optional<Node> byId = nodeService.getByPostcode(postcode);
+        if (byId.isPresent()) {
+            return mapper.getOutput(byId.get());
+        } else {
+            throw new NotExistsDataException("not found node by postcode = " + postcode);
+        }
+    }
+
+    @GetMapping(params = {"postcodeStartsWith", "pageNumber", "pageSize"})
+    public List<NodeOutput> getPagination(@RequestParam("postcodeStartsWith") String postcodeStartsWith,
+                                          @RequestParam("pageNumber") Integer pageNumber,
+                                          @RequestParam("pageSize") Integer pageSize) {
+        return mapper.getListOutputs(nodeService.getNodesByPostcodeStartsWith(postcodeStartsWith, PageRequest.of(pageNumber, pageSize)));
+    }
+
 }

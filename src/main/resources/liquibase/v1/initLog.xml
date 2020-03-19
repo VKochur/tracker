@@ -165,4 +165,14 @@
         <createSequence sequenceName="type_id_sequence" cacheSize="1" startValue="1" incrementBy="5" ></createSequence>
     </changeSet>
 
+    <changeSet id="13" author="kvv">
+        <preConditions>
+            <not>
+                <sequenceExists sequenceName="node_id_sequence"></sequenceExists>
+            </not>
+        </preConditions>
+
+        <createSequence sequenceName="node_id_sequence" cacheSize="1" startValue="1" incrementBy="5"></createSequence>
+    </changeSet>
+
 </databaseChangeLog>
