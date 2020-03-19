@@ -1,8 +1,12 @@
 package team.mediasoft.education.tracker.service;
 
-import java.util.List;
+import team.mediasoft.education.tracker.dto.PackInput;
+import team.mediasoft.education.tracker.dto.PackOutput;
+import team.mediasoft.education.tracker.entity.Pack;
 
-public interface PackService {
+
+public interface PackService
+        extends BasicService <Long, Pack, PackOutput, PackInput>{
 
 
 
