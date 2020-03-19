@@ -20,7 +20,7 @@ public class TypeRest {
 
     private TypeService typeService;
 
-    private Mapper<Type, TypeOutput, TypeInput> mapper;
+    private Mapper<Type, TypeOutput> mapper;
 
     @Autowired
     public void setTypeService(TypeService typeService) {
@@ -28,7 +28,7 @@ public class TypeRest {
     }
 
     @Autowired
-    public void setMapper(Mapper<Type, TypeOutput, TypeInput> mapper) {
+    public void setMapper(Mapper<Type, TypeOutput> mapper) {
         this.mapper = mapper;
     }
 

@@ -175,4 +175,14 @@
         <createSequence sequenceName="node_id_sequence" cacheSize="1" startValue="1" incrementBy="5"></createSequence>
     </changeSet>
 
+    <changeSet id="14" author="kvv">
+        <preConditions>
+            <not>
+                <sequenceExists sequenceName="package_id_sequence"></sequenceExists>
+            </not>
+        </preConditions>
+
+        <createSequence sequenceName="package_id_sequence" cacheSize="5" startValue="1" incrementBy="50"></createSequence>
+    </changeSet>
+
 </databaseChangeLog>

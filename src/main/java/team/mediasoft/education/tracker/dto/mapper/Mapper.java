@@ -8,7 +8,7 @@ import java.util.List;
  * @param <E> entity
  * @param <D> dto output
  */
-public interface Mapper<E, D, I> {
+public interface Mapper<E, D> {
 
     D getOutput(E entity);
 

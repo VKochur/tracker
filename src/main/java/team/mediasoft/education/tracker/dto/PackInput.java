@@ -1,12 +1,11 @@
 package team.mediasoft.education.tracker.dto;
 
-import team.mediasoft.education.tracker.entity.Type;
 
 public class PackInput {
 
     private String identifier;
     private String recipient;
-    private Type type;
+    private Long typeId;
     private Long nodeId;
 
     public String getIdentifier() {
@@ -25,12 +24,12 @@ public class PackInput {
         this.recipient = recipient;
     }
 
-    public Type getType() {
-        return type;
+    public Long getTypeId() {
+        return typeId;
     }
 
-    public void setType(Type type) {
-        this.type = type;
+    public void setTypeId(Long typeId) {
+        this.typeId = typeId;
     }
 
     public Long getNodeId() {

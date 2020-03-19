@@ -11,6 +11,8 @@ import java.util.List;
 public class Pack {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "pack_generator")
+    @SequenceGenerator(name = "pack_generator", sequenceName = "package_id_sequence")
     private Long id;
 
     @Column(name = "identifier", unique = true, nullable = false)

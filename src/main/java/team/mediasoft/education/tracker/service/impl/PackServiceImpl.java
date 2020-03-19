@@ -5,12 +5,14 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
 import team.mediasoft.education.tracker.dto.PackInput;
 import team.mediasoft.education.tracker.entity.Pack;
+import team.mediasoft.education.tracker.entity.support.PackStates;
 import team.mediasoft.education.tracker.exception.SurfaceException;
 import team.mediasoft.education.tracker.exception.tree.inner.NotSupportedException;
 import team.mediasoft.education.tracker.exception.tree.request.NotExistsDataException;
 import team.mediasoft.education.tracker.exception.tree.request.NotUniqueDataException;
 import team.mediasoft.education.tracker.repository.NodeRepository;
 import team.mediasoft.education.tracker.repository.PackRepository;
+import team.mediasoft.education.tracker.repository.TypeRepository;
 import team.mediasoft.education.tracker.service.PackService;
 import team.mediasoft.education.tracker.support.Wrap;
 import team.mediasoft.education.tracker.support.WrapFactory;
@@ -27,10 +29,21 @@ public class PackServiceImpl implements PackService {
 
     private NodeRepository nodeRepository;
 
+    private TypeRepository typeRepository;
 
     @Override
     public Pack getEntityForCreationByInput(PackInput dtoInput) {
-        return null;
+        Pack forCreation = new Pack();
+        forCreation.setIdentifier(dtoInput.getIdentifier());
+        forCreation.setRecipient(dtoInput.getRecipient());
+        forCreation.setType(typeRepository.findById(dtoInput.getTypeId()).get());
+        forCreation.setState(stateForCreated());
+        forCreation.setDestination(nodeRepository.findById(dtoInput.getNodeId()).get());
+        return packRepository.save(forCreation);
+    }
+
+    private PackStates stateForCreated() {
+        return PackStates.STORAGE;
     }
 
     @Override
@@ -45,6 +58,7 @@ public class PackServiceImpl implements PackService {
 
     @Override
     public SurfaceException checkCreateAbility(PackInput dtoInput) {
+
         SurfaceException exception = checkNode(dtoInput.getNodeId());
         if (exception != null) {
             return exception;
@@ -52,6 +66,18 @@ public class PackServiceImpl implements PackService {
         exception =checkUniqueIdentifier(dtoInput.getIdentifier());
         if (exception != null) {
             return exception;
+        }
+        exception = checkType(dtoInput.getTypeId());
+        if (exception != null) {
+            return exception;
+        }
+
+        return null;
+    }
+
+    private SurfaceException checkType(Long typeId) {
+        if (!typeRepository.existsById(typeId)) {
+            return new NotExistsDataException("not found type by id = " + typeId);
         }
         return null;
     }
@@ -86,6 +112,11 @@ public class PackServiceImpl implements PackService {
         this.packRepository = packRepository;
     }
 
+    @Autowired
+    public void setTypeRepository(TypeRepository typeRepository) {
+        this.typeRepository = typeRepository;
+    }
+
     @Override
     public WrapFactory<Pack, SurfaceException> wrapFactory() {
         return wrapFactory;
@@ -95,6 +126,5 @@ public class PackServiceImpl implements PackService {
     public JpaRepository<Pack, Long> jpaRepository() {
         return packRepository;
     }
-
 
 }

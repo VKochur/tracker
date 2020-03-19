@@ -46,6 +46,8 @@ public interface BasicService<ID, E, I> {
      * Should make entity
      * that you can pass into jpaRepository.save(forCreation) in order to create new entity
      *
+     * All verification should be in checkCreateAbility
+     *
      * @param dtoInput
      * @return
      */

@@ -20,7 +20,7 @@ public class NodeRest {
 
     private NodeService nodeService;
 
-    private Mapper<Node, NodeOutput, NodeInput> mapper;
+    private Mapper<Node, NodeOutput> mapper;
 
     @Autowired
     public void setNodeService(NodeService nodeService) {
@@ -28,7 +28,7 @@ public class NodeRest {
     }
 
     @Autowired
-    public void setMapper(Mapper<Node, NodeOutput, NodeInput> mapper) {
+    public void setMapper(Mapper<Node, NodeOutput> mapper) {
         this.mapper = mapper;
     }
 

@@ -1,6 +1,5 @@
 package team.mediasoft.education.tracker.dto;
 
-import team.mediasoft.education.tracker.entity.Type;
 import team.mediasoft.education.tracker.entity.support.PackStates;
 
 import java.util.List;
@@ -10,7 +9,7 @@ public class PackOutput {
     private Long id;
     private String identifier;
     private String recipient;
-    private Type type;
+    private Long typeId;
     private PackStates state;
     private Long destinationId;
     private List<Long> storiesIds;
@@ -40,12 +39,12 @@ public class PackOutput {
         this.recipient = recipient;
     }
 
-    public Type getType() {
-        return type;
+    public Long getTypeId() {
+        return typeId;
     }
 
-    public void setType(Type type) {
-        this.type = type;
+    public void setTypeId(Long typeId) {
+        this.typeId = typeId;
     }
 
     public PackStates getState() {
