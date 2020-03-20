@@ -21,7 +21,10 @@ public class PackMapper implements Mapper<Pack, PackOutput> {
         packOutput.setRecipient(entity.getRecipient());
         packOutput.setDestinationId(entity.getDestination().getId());
         packOutput.setState(entity.getState());
+
+        //todo: why isn't LasyException?
         packOutput.setStoriesIds(storiesIds(entity));
+
         return packOutput;
     }
 

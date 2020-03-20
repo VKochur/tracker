@@ -63,7 +63,7 @@ public class PackServiceImpl implements PackService {
         if (exception != null) {
             return exception;
         }
-        exception =checkUniqueIdentifier(dtoInput.getIdentifier());
+        exception = checkUniqueIdentifier(dtoInput.getIdentifier());
         if (exception != null) {
             return exception;
         }

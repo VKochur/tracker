@@ -33,7 +33,7 @@ public class Pack {
     @JoinColumn(name = "destination_id", nullable = false)
     private Node destination;
 
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "pack")
+    @OneToMany(fetch = FetchType.LAZY, /*cascade = CascadeType.ALL,*/ orphanRemoval = true, mappedBy = "pack")
     private List<StoryPoint> storyPoints;
 
     public Pack() {

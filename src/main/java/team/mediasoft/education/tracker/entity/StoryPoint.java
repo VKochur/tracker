@@ -12,6 +12,8 @@ import java.util.Objects;
 public class StoryPoint {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "story_point_generator")
+    @SequenceGenerator(name = "story_point_generator", sequenceName = "story_point_id_sequence")
     private Long id;
 
     @Column(name = "happened", nullable = false)

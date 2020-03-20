@@ -61,7 +61,7 @@ public interface BasicService<ID, E, I> {
      * Creates entity into storage
      *
      * Uses this.getEntityForCreationByInput method's result
-     * Checks ability before creation. You have implement checkCreateAbility
+     * Checks ability before creation. You have to implement checkCreateAbility
      *
      * @param dtoInput
      * @return container, which contains or entity (that was created), or exception with reason why it didn't happen

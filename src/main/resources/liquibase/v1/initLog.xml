@@ -185,4 +185,13 @@
         <createSequence sequenceName="package_id_sequence" cacheSize="5" startValue="1" incrementBy="50"></createSequence>
     </changeSet>
 
+    <changeSet id="15" author="kvv">
+        <preConditions>
+            <not>
+                <sequenceExists sequenceName="story_point_id_sequence"></sequenceExists>
+            </not>
+        </preConditions>
+
+        <createSequence sequenceName="story_point_id_sequence" cacheSize="10" startValue="1" incrementBy="50"></createSequence>
+    </changeSet>
 </databaseChangeLog>
