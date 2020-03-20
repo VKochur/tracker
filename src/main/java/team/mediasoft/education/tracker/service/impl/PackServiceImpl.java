@@ -32,6 +32,11 @@ public class PackServiceImpl implements PackService {
     private TypeRepository typeRepository;
 
     @Override
+    public Optional<Pack> getByIdentifier(String identifier) {
+        return packRepository.findByIdentifier(identifier);
+    }
+
+    @Override
     public Pack getEntityForCreationByInput(PackInput dtoInput) {
         Pack forCreation = new Pack();
         forCreation.setIdentifier(dtoInput.getIdentifier());

@@ -48,6 +48,16 @@ public class PackRest {
         }
     }
 
+    @GetMapping(value = "identifier/{identifier}", produces = "application/json;charset=utf-8")
+    public PackOutput getByIdentifier(@PathVariable(name = "identifier") String identifier) throws NotExistsDataException {
+        Optional<Pack> byIdentifier = packService.getByIdentifier(identifier);
+        if (byIdentifier.isPresent()) {
+            return mapper.getOutput(byIdentifier.get());
+        } else {
+            throw new NotExistsDataException("pack not found. identifier = " + identifier);
+        }
+    }
+
     @GetMapping(value = "/available_states")
     public List<PackStates> getAvailablePackStates() {
         return Arrays.asList(PackStates.values());
