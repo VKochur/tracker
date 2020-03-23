@@ -8,9 +8,10 @@ import team.mediasoft.education.tracker.dto.NodeInput;
 import team.mediasoft.education.tracker.entity.Node;
 import team.mediasoft.education.tracker.exception.SurfaceException;
 import team.mediasoft.education.tracker.exception.tree.inner.NotSupportedException;
-import team.mediasoft.education.tracker.exception.tree.request.NotUniqueDataException;
 import team.mediasoft.education.tracker.repository.NodeRepository;
 import team.mediasoft.education.tracker.service.NodeService;
+import team.mediasoft.education.tracker.service.impl.verification.TestResultSolver;
+import team.mediasoft.education.tracker.service.impl.verification.impl.UniquePostcodeNodeTester;
 import team.mediasoft.education.tracker.support.Wrap;
 import team.mediasoft.education.tracker.support.WrapFactory;
 
@@ -24,6 +25,8 @@ public class NodeServiceImpl implements NodeService {
 
     private WrapFactory<Node, SurfaceException> wrapFactory;
 
+    private TestResultSolver<SurfaceException> testResultSolver;
+
     @Override
     public Optional<Node> getByPostcode(String postcode) {
         return nodeRepository.findByPostcode(postcode);
@@ -31,11 +34,7 @@ public class NodeServiceImpl implements NodeService {
 
     @Override
     public SurfaceException checkCreateAbility(NodeInput forCreation) {
-        Optional<Node> byPostcode = nodeRepository.findByPostcode(forCreation.getPostcode());
-        if (byPostcode.isPresent()) {
-            return new NotUniqueDataException("node with postcode  = \"" + byPostcode.get().getPostcode() + "\" existed yet");
-        }
-        return null;
+        return testResultSolver.solve(UniquePostcodeNodeTester.class, forCreation.getPostcode());
     }
 
     @Override
@@ -69,6 +68,11 @@ public class NodeServiceImpl implements NodeService {
     @Autowired
     public void setNodeRepository(NodeRepository nodeRepository) {
         this.nodeRepository = nodeRepository;
+    }
+
+    @Autowired
+    public void setTestResultSolver(TestResultSolver<SurfaceException> testResultSolver) {
+        this.testResultSolver = testResultSolver;
     }
 
     @Override

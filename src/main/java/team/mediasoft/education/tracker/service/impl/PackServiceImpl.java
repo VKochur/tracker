@@ -8,16 +8,20 @@ import team.mediasoft.education.tracker.entity.Pack;
 import team.mediasoft.education.tracker.entity.support.PackStates;
 import team.mediasoft.education.tracker.exception.SurfaceException;
 import team.mediasoft.education.tracker.exception.tree.inner.NotSupportedException;
-import team.mediasoft.education.tracker.exception.tree.request.NotExistsDataException;
-import team.mediasoft.education.tracker.exception.tree.request.NotUniqueDataException;
 import team.mediasoft.education.tracker.repository.NodeRepository;
 import team.mediasoft.education.tracker.repository.PackRepository;
 import team.mediasoft.education.tracker.repository.TypeRepository;
 import team.mediasoft.education.tracker.service.PackService;
+import team.mediasoft.education.tracker.service.impl.verification.Decider;
+import team.mediasoft.education.tracker.service.impl.verification.TestResultSolver;
+import team.mediasoft.education.tracker.service.impl.verification.impl.ExistNodeByIdTester;
+import team.mediasoft.education.tracker.service.impl.verification.impl.ExistTypeByIdTester;
+import team.mediasoft.education.tracker.service.impl.verification.impl.UniqueIdentifierPackTester;
 import team.mediasoft.education.tracker.support.Wrap;
 import team.mediasoft.education.tracker.support.WrapFactory;
 
-
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -30,6 +34,10 @@ public class PackServiceImpl implements PackService {
     private NodeRepository nodeRepository;
 
     private TypeRepository typeRepository;
+
+    private TestResultSolver<SurfaceException> testResultSolver;
+
+    private Decider<SurfaceException> decider;
 
     @Override
     public Optional<Pack> getByIdentifier(String identifier) {
@@ -52,6 +60,17 @@ public class PackServiceImpl implements PackService {
     }
 
     @Override
+    public SurfaceException checkCreateAbility(PackInput dtoInput) {
+        List<SurfaceException> exceptionList = Arrays.asList(
+                testResultSolver.solve(UniqueIdentifierPackTester.class, dtoInput.getIdentifier()),
+                testResultSolver.solve(ExistNodeByIdTester.class, dtoInput.getNodeId()),
+                testResultSolver.solve(ExistTypeByIdTester.class, dtoInput.getTypeId())
+        );
+
+        return decider.decide(exceptionList);
+    }
+
+    @Override
     public Wrap<Pack, SurfaceException> deleteById(Long aLong) {
         return wrapFactory.ofFail(new NotSupportedException("delete pack not supported"));
     }
@@ -61,45 +80,14 @@ public class PackServiceImpl implements PackService {
         return new NotSupportedException("check delete pack not supported");
     }
 
-    @Override
-    public SurfaceException checkCreateAbility(PackInput dtoInput) {
-
-        SurfaceException exception = checkNode(dtoInput.getNodeId());
-        if (exception != null) {
-            return exception;
-        }
-        exception = checkUniqueIdentifier(dtoInput.getIdentifier());
-        if (exception != null) {
-            return exception;
-        }
-        exception = checkType(dtoInput.getTypeId());
-        if (exception != null) {
-            return exception;
-        }
-
-        return null;
+    @Autowired
+    public void setTestResultSolver(TestResultSolver<SurfaceException> testResultSolver) {
+        this.testResultSolver = testResultSolver;
     }
 
-    private SurfaceException checkType(Long typeId) {
-        if (!typeRepository.existsById(typeId)) {
-            return new NotExistsDataException("not found type by id = " + typeId);
-        }
-        return null;
-    }
-
-    private SurfaceException checkUniqueIdentifier(String identifier) {
-        Optional<Pack> byIdentifier = packRepository.findByIdentifier(identifier);
-        if (byIdentifier.isPresent()) {
-            return new NotUniqueDataException("pack with identifier = \"" + identifier + "\" existed yet");
-        }
-        return null;
-    }
-
-    private SurfaceException checkNode(Long nodeId) {
-        if (!nodeRepository.existsById(nodeId)) {
-            return new NotExistsDataException("not found node by id = " + nodeId);
-        }
-        return null;
+    @Autowired
+    public void setDecider(Decider<SurfaceException> decider) {
+        this.decider = decider;
     }
 
     @Autowired

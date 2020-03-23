@@ -7,16 +7,21 @@ import org.springframework.stereotype.Service;
 import team.mediasoft.education.tracker.dto.TypeInput;
 import team.mediasoft.education.tracker.entity.Type;
 import team.mediasoft.education.tracker.exception.SurfaceException;
-import team.mediasoft.education.tracker.exception.tree.request.FailForeignConstraintException;
 import team.mediasoft.education.tracker.exception.tree.request.NotExistsDataException;
 import team.mediasoft.education.tracker.exception.tree.request.NotUniqueDataException;
 import team.mediasoft.education.tracker.repository.PackRepository;
 import team.mediasoft.education.tracker.repository.TypeRepository;
 import team.mediasoft.education.tracker.service.TypeService;
+import team.mediasoft.education.tracker.service.impl.verification.Decider;
+import team.mediasoft.education.tracker.service.impl.verification.TestResultSolver;
+import team.mediasoft.education.tracker.service.impl.verification.impl.ExistTypeByIdTester;
+import team.mediasoft.education.tracker.service.impl.verification.impl.NotExistRelatedPack;
+import team.mediasoft.education.tracker.service.impl.verification.impl.UniqueNameTypeTester;
 import team.mediasoft.education.tracker.support.Wrap;
 import team.mediasoft.education.tracker.support.WrapFactory;
 
 import javax.transaction.Transactional;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -29,6 +34,10 @@ public class TypeServiceImpl implements TypeService {
 
     private PackRepository packRepository;
 
+    private TestResultSolver<SurfaceException> solver;
+
+    private Decider<SurfaceException> decider;
+
     @Override
     public Type getEntityForCreationByInput(TypeInput dtoInput) {
         Type type = new Type();
@@ -38,13 +47,7 @@ public class TypeServiceImpl implements TypeService {
 
     @Override
     public SurfaceException checkCreateAbility(TypeInput forCreation) {
-        String typeName = forCreation.getName();
-        Optional<Long> idByName = this.getIdByNameIgnoreCase(typeName);
-        if (idByName.isPresent()) {
-            return new NotUniqueDataException("type \"" + typeName + "\" exists yet (differences may be in case of letters only)");
-        }
-
-        return null;
+        return solver.solve(UniqueNameTypeTester.class, forCreation.getName());
     }
 
     /**
@@ -54,19 +57,11 @@ public class TypeServiceImpl implements TypeService {
      * @return if null, it is ok, or exception
      */
     public SurfaceException checkDeleteAbility(Long id) {
-
-        Optional<Type> type = typeRepository.findById(id);
-        //check exists
-        if (!type.isPresent()) {
-            return new NotExistsDataException("not found type by id = " + id);
-        }
-
-        //check fk constrain
-        if (packRepository.existsPackByType(type.get())) {
-            return new FailForeignConstraintException("related packs existed");
-        }
-
-        return null;
+        List<SurfaceException> exceptionList = Arrays.asList(
+                solver.solve(ExistTypeByIdTester.class, id),
+                solver.solve(NotExistRelatedPack.class, id)
+        );
+        return decider.decide(exceptionList);
     }
 
     @Override
@@ -80,6 +75,7 @@ public class TypeServiceImpl implements TypeService {
         Optional<Type> withOldNameInDb = typeRepository.findById(id);
         if (withOldNameInDb.isPresent()) {
             Optional<Long> withNewNameInDb = typeRepository.findIdByNameIgnoreCase(newName);
+            //if other type doesn't exist with new name, or we are renaming the same type
             if (!withNewNameInDb.isPresent() || (withNewNameInDb.get().equals(id))) {
                 Type typeInDb = withOldNameInDb.get();
                 typeInDb.setName(newName);
@@ -95,6 +91,16 @@ public class TypeServiceImpl implements TypeService {
     @Override
     public List<Type> getAllTypesOrderByName(boolean asc) {
         return typeRepository.findAll(Sort.by(new Sort.Order((asc) ? Sort.Direction.ASC : Sort.Direction.DESC, "name")));
+    }
+
+    @Autowired
+    public void setSolver(TestResultSolver<SurfaceException> solver) {
+        this.solver = solver;
+    }
+
+    @Autowired
+    public void setDecider(Decider<SurfaceException> decider) {
+        this.decider = decider;
     }
 
     @Autowired

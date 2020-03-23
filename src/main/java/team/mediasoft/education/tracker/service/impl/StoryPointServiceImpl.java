@@ -8,16 +8,19 @@ import team.mediasoft.education.tracker.entity.Pack;
 import team.mediasoft.education.tracker.entity.StoryPoint;
 import team.mediasoft.education.tracker.exception.SurfaceException;
 import team.mediasoft.education.tracker.exception.tree.inner.NotSupportedException;
-import team.mediasoft.education.tracker.exception.tree.request.NotExistsDataException;
 import team.mediasoft.education.tracker.repository.NodeRepository;
 import team.mediasoft.education.tracker.repository.PackRepository;
 import team.mediasoft.education.tracker.repository.StoryPointRepository;
 import team.mediasoft.education.tracker.service.StoryPointService;
+import team.mediasoft.education.tracker.service.impl.verification.Decider;
+import team.mediasoft.education.tracker.service.impl.verification.TestResultSolver;
+import team.mediasoft.education.tracker.service.impl.verification.impl.ExistNodeByIdTester;
+import team.mediasoft.education.tracker.service.impl.verification.impl.ExistPackByIdTester;
 import team.mediasoft.education.tracker.support.Wrap;
 import team.mediasoft.education.tracker.support.WrapFactory;
 
-import javax.transaction.Transactional;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 
 @Service
@@ -31,6 +34,11 @@ public class StoryPointServiceImpl implements StoryPointService {
 
     private WrapFactory<StoryPoint, SurfaceException> wrapFactory;
 
+    private TestResultSolver<SurfaceException> solver;
+
+    private Decider<SurfaceException> decider;
+
+
     @Override
     public StoryPoint getEntityForCreationByInput(StoryPointInput dtoInput) {
         StoryPoint forCreation = new StoryPoint();
@@ -41,7 +49,11 @@ public class StoryPointServiceImpl implements StoryPointService {
         return forCreation;
     }
 
-
+    /**
+     * Can't use create by default, because we need to synchronization pack's story point and pack
+     * @param dtoInput
+     * @return
+     */
    // @Transactional
    //todo: why does synchronization work without transactional and cascade?
     @Override
@@ -64,41 +76,28 @@ public class StoryPointServiceImpl implements StoryPointService {
         }
     }
 
-
-    //todo pick up logic for verification. see similar in PackService
     @Override
     public SurfaceException checkCreateAbility(StoryPointInput dtoInput) {
-
-        SurfaceException exception = checkNode(dtoInput.getNodeId());
-        if (exception != null) {
-            return exception;
-        }
-        exception = checkPack(dtoInput.getPackId());
-        if (exception != null) {
-            return exception;
-        }
-
-        return null;
-    }
-
-    //todo pick up logic for verification
-    private SurfaceException checkPack(Long packId) {
-        if (!packRepository.existsById(packId)) {
-            return new NotExistsDataException("not found pack by id = " + packId);
-        }
-        return null;
-    }
-
-    private SurfaceException checkNode(Long nodeId) {
-        if (!nodeRepository.existsById(nodeId)) {
-            return new NotExistsDataException("not found node by id = " + nodeId);
-        }
-        return null;
+        List<SurfaceException> exceptionList = Arrays.asList(
+                solver.solve(ExistPackByIdTester.class, dtoInput.getPackId()),
+                solver.solve(ExistNodeByIdTester.class, dtoInput.getNodeId())
+        );
+        return decider.decide(exceptionList);
     }
 
     @Override
     public List<StoryPoint> getByIdsOrderByPoint(List<Long> ids) {
       return storyPointRepository.getByIdInOrderByPoint(ids);
+    }
+
+    @Autowired
+    public void setSolver(TestResultSolver<SurfaceException> solver) {
+        this.solver = solver;
+    }
+
+    @Autowired
+    public void setDecider(Decider<SurfaceException> decider) {
+        this.decider = decider;
     }
 
     @Autowired
