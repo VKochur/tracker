@@ -15,6 +15,7 @@ import team.mediasoft.education.tracker.service.PackService;
 import team.mediasoft.education.tracker.service.impl.verification.Decider;
 import team.mediasoft.education.tracker.service.impl.verification.TestResultSolver;
 import team.mediasoft.education.tracker.service.impl.verification.impl.ExistNodeByIdTester;
+import team.mediasoft.education.tracker.service.impl.verification.impl.ExistPackByIdTester;
 import team.mediasoft.education.tracker.service.impl.verification.impl.ExistTypeByIdTester;
 import team.mediasoft.education.tracker.service.impl.verification.impl.UniqueIdentifierPackTester;
 import team.mediasoft.education.tracker.support.Wrap;
@@ -71,13 +72,8 @@ public class PackServiceImpl implements PackService {
     }
 
     @Override
-    public Wrap<Pack, SurfaceException> deleteById(Long aLong) {
-        return wrapFactory.ofFail(new NotSupportedException("delete pack not supported"));
-    }
-
-    @Override
-    public SurfaceException checkDeleteAbility(Long aLong) {
-        return new NotSupportedException("check delete pack not supported");
+    public SurfaceException checkDeleteAbility(Long id) {
+        return testResultSolver.solve(ExistPackByIdTester.class, id);
     }
 
     @Autowired

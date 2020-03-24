@@ -1,11 +1,13 @@
 package team.mediasoft.education.tracker.service;
 
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import team.mediasoft.education.tracker.exception.SurfaceException;
 import team.mediasoft.education.tracker.exception.tree.request.NotExistsDataException;
 import team.mediasoft.education.tracker.support.Wrap;
 import team.mediasoft.education.tracker.support.WrapFactory;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -55,6 +57,15 @@ public interface BasicService<ID, E, I> {
 
     default Optional<E> getById(ID id) {
         return jpaRepository().findById(id);
+    }
+
+    /**
+     *
+     * @param pageable
+     * @return all entities
+     */
+    default List<E> getAll(Pageable pageable) {
+        return jpaRepository().findAll(pageable).getContent();
     }
 
     /**

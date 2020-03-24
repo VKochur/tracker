@@ -2,6 +2,7 @@ package team.mediasoft.education.tracker.api.rest;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.*;
 import team.mediasoft.education.tracker.dto.NodeInput;
 import team.mediasoft.education.tracker.dto.NodeOutput;
@@ -57,11 +58,17 @@ public class NodeRest {
         }
     }
 
-    @GetMapping(params = {"postcodeStartsWith", "pageNumber", "pageSize"})
-    public List<NodeOutput> getPagination(@RequestParam("postcodeStartsWith") String postcodeStartsWith,
+    @GetMapping(value = "/postcode_start_with", params = {"postcodeStartsWith", "pageNumber", "pageSize"})
+    public List<NodeOutput> getByPostCodeStartsWith(@RequestParam("postcodeStartsWith") String postcodeStartsWith,
                                           @RequestParam("pageNumber") Integer pageNumber,
                                           @RequestParam("pageSize") Integer pageSize) {
         return mapper.getListOutputs(nodeService.getNodesByPostcodeStartsWith(postcodeStartsWith, PageRequest.of(pageNumber, pageSize)));
+    }
+
+    @GetMapping(value = "/all")
+    public List<NodeOutput> getAllOrderByPostcode(@RequestParam("pageNumber") Integer pageNumber,
+                                                  @RequestParam("pageSize") Integer pageSize) {
+        return mapper.getListOutputs(nodeService.getAll(PageRequest.of(pageNumber, pageSize, Sort.by("postcode"))));
     }
 
 }

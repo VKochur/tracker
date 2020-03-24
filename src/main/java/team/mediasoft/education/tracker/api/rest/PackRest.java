@@ -1,7 +1,10 @@
 package team.mediasoft.education.tracker.api.rest;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.*;
+import team.mediasoft.education.tracker.dto.NodeOutput;
 import team.mediasoft.education.tracker.dto.PackInput;
 import team.mediasoft.education.tracker.dto.PackOutput;
 import team.mediasoft.education.tracker.dto.mapper.Mapper;
@@ -62,5 +65,17 @@ public class PackRest {
     public List<PackStates> getAvailablePackStates() {
         return Arrays.asList(PackStates.values());
     }
+
+    @GetMapping(value = "/all")
+    public List<PackOutput> getAllOrderByIdentifier(@RequestParam("pageNumber") Integer pageNumber,
+                                                  @RequestParam("pageSize") Integer pageSize) {
+        return mapper.getListOutputs(packService.getAll(PageRequest.of(pageNumber, pageSize, Sort.by("identifier"))));
+    }
+
+    @DeleteMapping(value = "/{id}")
+    public PackOutput deleteById(@PathVariable(name = "id") Long id) throws SurfaceException {
+        return mapper.getOutput(packService.deleteById(id).getValueOrElseThrow());
+    }
+
 
 }

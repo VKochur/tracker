@@ -12,4 +12,5 @@ public interface NodeRepository extends JpaRepository<Node, Long> {
     Optional<Node> findByPostcode(String postcode);
 
     List<Node> findByPostcodeStartingWithOrderByPostcode(String postcode, Pageable pageable);
+
 }
