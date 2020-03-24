@@ -1,6 +1,7 @@
 package team.mediasoft.education.tracker.api.rest;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import team.mediasoft.education.tracker.dto.TypeInput;
 import team.mediasoft.education.tracker.dto.TypeOutput;
@@ -11,9 +12,13 @@ import team.mediasoft.education.tracker.exception.tree.request.NotExistsDataExce
 import team.mediasoft.education.tracker.service.TypeService;
 import team.mediasoft.education.tracker.support.Wrap;
 
+import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Size;
 import java.util.List;
 import java.util.Optional;
 
+@Validated
 @RestController
 @RequestMapping("/api/type")
 public class TypeRest {
@@ -56,13 +61,15 @@ public class TypeRest {
 
     @PostMapping(produces = "application/json;charset=utf-8", consumes = "application/json;charset=utf-8")
     @ResponseBody
-    public TypeOutput createType(@RequestBody TypeInput typeInput) throws SurfaceException {
+    public TypeOutput createType(@Valid @RequestBody TypeInput typeInput) throws SurfaceException {
         Wrap<Type, SurfaceException> typeDtoWrap = typeService.create(typeInput);
         return mapper.getOutput(typeDtoWrap.getValueOrElseThrow());
     }
 
     @PutMapping(value = "/{id}/{newName}}", produces = "application/json;charset=utf-8")
-    public TypeOutput updateName(@PathVariable(name = "id") Long id, @PathVariable(name = "newName") String name) throws SurfaceException {
+    public TypeOutput updateName(@PathVariable(name = "id") Long id,
+                                 @NotBlank(message = "name can't be empty") @Size(min = 1, max = 50, message = "name's length must be in [1,50]")
+                                 @PathVariable(name = "newName") String name) throws SurfaceException {
         Wrap<Type, SurfaceException> typeDtoWrap = typeService.updateName(id, name);
         return mapper.getOutput(typeDtoWrap.getValueOrElseThrow());
     }
