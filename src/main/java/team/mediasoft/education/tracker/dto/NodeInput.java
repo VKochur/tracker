@@ -1,8 +1,16 @@
 package team.mediasoft.education.tracker.dto;
 
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Size;
+
 public class NodeInput {
 
+    @NotBlank
+    @Size(max = 255)
     private String postcode;
+
+    @NotBlank
+    @Size(max = 50)
     private String name;
 
     public String getPostcode() {

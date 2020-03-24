@@ -6,7 +6,7 @@ import javax.validation.constraints.Size;
 public class TypeInput {
 
     @NotBlank(message = "name can't be empty")
-    @Size(min = 1, max = 50, message = "name's length must be in [1, 50]")
+    @Size(max = 50, message = "name's length must be in [1, 50]")
     private String name;
 
     public String getName() {

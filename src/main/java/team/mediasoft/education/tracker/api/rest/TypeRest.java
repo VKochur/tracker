@@ -68,7 +68,7 @@ public class TypeRest {
 
     @PutMapping(value = "/{id}/{newName}}", produces = "application/json;charset=utf-8")
     public TypeOutput updateName(@PathVariable(name = "id") Long id,
-                                 @NotBlank(message = "name can't be empty") @Size(min = 1, max = 50, message = "name's length must be in [1,50]")
+                                 @NotBlank(message = "name can't be empty") @Size(max = 50, message = "name's length must be in [1,50]")
                                  @PathVariable(name = "newName") String name) throws SurfaceException {
         Wrap<Type, SurfaceException> typeDtoWrap = typeService.updateName(id, name);
         return mapper.getOutput(typeDtoWrap.getValueOrElseThrow());

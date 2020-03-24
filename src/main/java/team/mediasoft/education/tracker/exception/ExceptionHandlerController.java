@@ -11,7 +11,10 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
+import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
+import javax.validation.Path;
+import java.util.Iterator;
 
 @ControllerAdvice
 public class ExceptionHandlerController extends ResponseEntityExceptionHandler {
@@ -31,6 +34,8 @@ public class ExceptionHandlerController extends ResponseEntityExceptionHandler {
     /**
      * Handles MethodArgumentNotValidExceptions.
      * uses HttpStatus.BAD_REQUEST, info about errors from exception for response
+     *
+     * exception from RestController, which caused not valid method's param (that are complex object @RequestBody) are handled here
      * @param ex
      * @param headers
      * @param status
@@ -53,6 +58,8 @@ public class ExceptionHandlerController extends ResponseEntityExceptionHandler {
     /**
      * Handles ConstraintViolationExceptions.
      * uses HttpStatus.BAD_REQUEST, info about errors from exception for response
+     *
+     * exception from RestController, which caused not valid method's param (like Long, String etc (which aren't complex object)) are handled here
      * @param ex
      * @param request
      * @return
@@ -60,9 +67,31 @@ public class ExceptionHandlerController extends ResponseEntityExceptionHandler {
     @ExceptionHandler(value = ConstraintViolationException.class)
     protected ResponseEntity<Object> handleConstraintViolationException(ConstraintViolationException ex, WebRequest request) {
         StringBuilder message = new StringBuilder();
-        ex.getConstraintViolations().forEach(constraintViolation -> message.append(constraintViolation.getMessage()).append("; "));
+
+        ex.getConstraintViolations().forEach(constraintViolation ->
+            message.append(defineParamName(constraintViolation)).append(": ").append(constraintViolation.getMessage()).append("; ")
+        );
 
         ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST.value(), message.toString().trim());
         return super.handleExceptionInternal(ex, errorResponse, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
+    }
+
+    /**
+     * Gets param's name in method, that has wrong (no valid) value
+     * @param constraintViolation
+     * @return
+     */
+    private String defineParamName(ConstraintViolation constraintViolation) {
+        Path propertyPath = constraintViolation.getPropertyPath();
+        Iterator<Path.Node> iterator = propertyPath.iterator();
+        Path.Node current = null;
+        while(iterator.hasNext()) {
+            current = iterator.next();
+        }
+        if (current != null) {
+            return current.getName();
+        } else {
+            return constraintViolation.getPropertyPath().toString();
+        }
     }
 }
