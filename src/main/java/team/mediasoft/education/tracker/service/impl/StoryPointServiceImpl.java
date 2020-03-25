@@ -4,7 +4,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
 import team.mediasoft.education.tracker.dto.StoryPointInput;
-import team.mediasoft.education.tracker.entity.Pack;
 import team.mediasoft.education.tracker.entity.StoryPoint;
 import team.mediasoft.education.tracker.entity.support.PackStates;
 import team.mediasoft.education.tracker.exception.SurfaceException;
@@ -20,6 +19,7 @@ import team.mediasoft.education.tracker.service.impl.verification.impl.ExistPack
 import team.mediasoft.education.tracker.support.Wrap;
 import team.mediasoft.education.tracker.support.WrapFactory;
 
+import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
@@ -39,6 +39,8 @@ public class StoryPointServiceImpl implements StoryPointService {
 
     private Decider<SurfaceException> decider;
 
+    private Synchronizator synchronizator;
+
 
     @Override
     public StoryPoint getEntityForCreationByInput(StoryPointInput dtoInput) {
@@ -51,30 +53,18 @@ public class StoryPointServiceImpl implements StoryPointService {
     }
 
     /**
-     * Can't use create by default, because we need to synchronization pack's story point and pack
+     * Creates new storyPoint and does synchronization with related pack
      * @param dtoInput
      * @return
      */
-   // @Transactional
-   //todo: why does synchronization work without transactional and cascade?
+    @Transactional
     @Override
-    public Wrap<StoryPoint, SurfaceException> create(StoryPointInput dtoInput) {
-        SurfaceException exception = checkCreateAbility(dtoInput);
-        if (exception != null) {
-            return wrapFactory.ofFail(exception);
-        } else {
-            StoryPoint forCreation = getEntityForCreationByInput(dtoInput);
-            doSynchronizationWithPack(forCreation);
-            StoryPoint saved = storyPointRepository.save(forCreation);
-            return wrapFactory.ofSuccess(saved);
+    public Wrap<StoryPoint, SurfaceException> addStoryPoint(StoryPointInput dtoInput) {
+        Wrap<StoryPoint, SurfaceException> storyPointWrap = create(dtoInput);
+        if (storyPointWrap.wasReturnedValue()) {
+            synchronizator.doSynchronizationWithPack(storyPointWrap.getValue());
         }
-    }
-
-    private void doSynchronizationWithPack(StoryPoint forCreation) {
-        Pack pack = forCreation.getPack();
-        if (pack.getState() != forCreation.getState()) {
-            pack.setState(forCreation.getState());
-        }
+        return storyPointWrap;
     }
 
     @Override
@@ -119,6 +109,11 @@ public class StoryPointServiceImpl implements StoryPointService {
     @Autowired
     public void setWrapFactory(WrapFactory<StoryPoint, SurfaceException> wrapFactory) {
         this.wrapFactory = wrapFactory;
+    }
+
+    @Autowired
+    public void setSynchronizator(Synchronizator synchronizator) {
+        this.synchronizator = synchronizator;
     }
 
     @Override

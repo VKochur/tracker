@@ -34,7 +34,7 @@ public class StoryPointRest {
 
     @PostMapping(produces = "application/json;charset=utf-8", consumes = "application/json;charset=utf-8")
     public StoryPointOutput createStoryPoint(@Valid @RequestBody StoryPointInput storyPointInput) throws SurfaceException {
-        return mapper.getOutput(storyPointService.create(storyPointInput).getValueOrElseThrow());
+        return mapper.getOutput(storyPointService.addStoryPoint(storyPointInput).getValueOrElseThrow());
     }
 
     @GetMapping(value = "/{id}")

@@ -7,7 +7,6 @@ import team.mediasoft.education.tracker.dto.PackInput;
 import team.mediasoft.education.tracker.entity.Pack;
 import team.mediasoft.education.tracker.entity.support.PackStates;
 import team.mediasoft.education.tracker.exception.SurfaceException;
-import team.mediasoft.education.tracker.exception.tree.inner.NotSupportedException;
 import team.mediasoft.education.tracker.repository.NodeRepository;
 import team.mediasoft.education.tracker.repository.PackRepository;
 import team.mediasoft.education.tracker.repository.TypeRepository;
@@ -18,7 +17,6 @@ import team.mediasoft.education.tracker.service.impl.verification.impl.ExistNode
 import team.mediasoft.education.tracker.service.impl.verification.impl.ExistPackByIdTester;
 import team.mediasoft.education.tracker.service.impl.verification.impl.ExistTypeByIdTester;
 import team.mediasoft.education.tracker.service.impl.verification.impl.UniqueIdentifierPackTester;
-import team.mediasoft.education.tracker.support.Wrap;
 import team.mediasoft.education.tracker.support.WrapFactory;
 
 import java.util.Arrays;
