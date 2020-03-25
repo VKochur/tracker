@@ -2,9 +2,13 @@ package team.mediasoft.education.tracker.dto;
 
 import team.mediasoft.education.tracker.entity.support.PackStates;
 
+import javax.validation.constraints.NotNull;
+
 public class StoryPointInput {
 
+    @NotNull
     private Long nodeId;
+    @NotNull
     private Long packId;
     private PackStates state;
 

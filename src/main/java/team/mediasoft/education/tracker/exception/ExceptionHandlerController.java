@@ -91,7 +91,7 @@ public class ExceptionHandlerController extends ResponseEntityExceptionHandler {
         if (current != null) {
             return current.getName();
         } else {
-            return constraintViolation.getPropertyPath().toString();
+            return String.valueOf(constraintViolation.getPropertyPath());
         }
     }
 }

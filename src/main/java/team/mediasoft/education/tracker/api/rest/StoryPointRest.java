@@ -10,6 +10,7 @@ import team.mediasoft.education.tracker.exception.SurfaceException;
 import team.mediasoft.education.tracker.exception.tree.request.NotExistsDataException;
 import team.mediasoft.education.tracker.service.StoryPointService;
 
+import javax.validation.Valid;
 import java.util.List;
 import java.util.Optional;
 
@@ -32,7 +33,7 @@ public class StoryPointRest {
     }
 
     @PostMapping(produces = "application/json;charset=utf-8", consumes = "application/json;charset=utf-8")
-    public StoryPointOutput createStoryPoint(@RequestBody StoryPointInput storyPointInput) throws SurfaceException {
+    public StoryPointOutput createStoryPoint(@Valid @RequestBody StoryPointInput storyPointInput) throws SurfaceException {
         return mapper.getOutput(storyPointService.create(storyPointInput).getValueOrElseThrow());
     }
 

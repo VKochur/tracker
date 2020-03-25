@@ -3,8 +3,8 @@ package team.mediasoft.education.tracker.api.rest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import team.mediasoft.education.tracker.dto.NodeOutput;
 import team.mediasoft.education.tracker.dto.PackInput;
 import team.mediasoft.education.tracker.dto.PackOutput;
 import team.mediasoft.education.tracker.dto.mapper.Mapper;
@@ -14,10 +14,14 @@ import team.mediasoft.education.tracker.exception.SurfaceException;
 import team.mediasoft.education.tracker.exception.tree.request.NotExistsDataException;
 import team.mediasoft.education.tracker.service.PackService;
 
+import javax.validation.Valid;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.Positive;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
+@Validated
 @RestController
 @RequestMapping("api/pack")
 public class PackRest {
@@ -37,7 +41,7 @@ public class PackRest {
     }
 
     @PostMapping(produces = "application/json;charset=utf-8")
-    public PackOutput createPack(@RequestBody PackInput packInput) throws SurfaceException {
+    public PackOutput createPack(@Valid @RequestBody PackInput packInput) throws SurfaceException {
         return mapper.getOutput(packService.create(packInput).getValueOrElseThrow());
     }
 
@@ -67,8 +71,8 @@ public class PackRest {
     }
 
     @GetMapping(value = "/all")
-    public List<PackOutput> getAllOrderByIdentifier(@RequestParam("pageNumber") Integer pageNumber,
-                                                  @RequestParam("pageSize") Integer pageSize) {
+    public List<PackOutput> getAllOrderByIdentifier(@Min(value = 0) @RequestParam("pageNumber") Integer pageNumber,
+                                                  @Positive @RequestParam("pageSize") Integer pageSize) {
         return mapper.getListOutputs(packService.getAll(PageRequest.of(pageNumber, pageSize, Sort.by("identifier"))));
     }
 
