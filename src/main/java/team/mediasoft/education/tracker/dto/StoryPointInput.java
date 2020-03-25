@@ -1,6 +1,7 @@
 package team.mediasoft.education.tracker.dto;
 
 import team.mediasoft.education.tracker.entity.support.PackStates;
+import team.mediasoft.education.tracker.support.validation.ValueOfEnum;
 
 import javax.validation.constraints.NotNull;
 
@@ -8,9 +9,12 @@ public class StoryPointInput {
 
     @NotNull
     private Long nodeId;
+
     @NotNull
     private Long packId;
-    private PackStates state;
+
+    @ValueOfEnum(enumClazz = PackStates.class, message = "must be any of \"STORAGE\", \"MOVEMENT\"")
+    private String state;
 
     public Long getNodeId() {
         return nodeId;
@@ -28,11 +32,11 @@ public class StoryPointInput {
         this.packId = packId;
     }
 
-    public PackStates getState() {
+    public String getState() {
         return state;
     }
 
-    public void setState(PackStates state) {
+    public void setState(String state) {
         this.state = state;
     }
 }

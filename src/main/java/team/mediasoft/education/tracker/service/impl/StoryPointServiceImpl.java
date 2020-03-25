@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import team.mediasoft.education.tracker.dto.StoryPointInput;
 import team.mediasoft.education.tracker.entity.Pack;
 import team.mediasoft.education.tracker.entity.StoryPoint;
+import team.mediasoft.education.tracker.entity.support.PackStates;
 import team.mediasoft.education.tracker.exception.SurfaceException;
 import team.mediasoft.education.tracker.exception.tree.inner.NotSupportedException;
 import team.mediasoft.education.tracker.repository.NodeRepository;
@@ -44,7 +45,7 @@ public class StoryPointServiceImpl implements StoryPointService {
         StoryPoint forCreation = new StoryPoint();
         forCreation.setPack(packRepository.findById(dtoInput.getPackId()).get());
         forCreation.setPlace(nodeRepository.findById(dtoInput.getNodeId()).get());
-        forCreation.setState(dtoInput.getState());
+        forCreation.setState(PackStates.valueOf(dtoInput.getState()));
         forCreation.setPoint(LocalDateTime.now());
         return forCreation;
     }
