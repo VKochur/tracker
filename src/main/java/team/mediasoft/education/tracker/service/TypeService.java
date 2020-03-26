@@ -3,14 +3,19 @@ package team.mediasoft.education.tracker.service;
 import team.mediasoft.education.tracker.dto.TypeInput;
 import team.mediasoft.education.tracker.entity.Type;
 import team.mediasoft.education.tracker.exception.SurfaceException;
+import team.mediasoft.education.tracker.service.basic.CreatorBasicService;
+import team.mediasoft.education.tracker.service.basic.DeleterBasicService;
+import team.mediasoft.education.tracker.service.basic.FinderBasicService;
 import team.mediasoft.education.tracker.support.Wrap;
 
 import java.util.List;
 import java.util.Optional;
 
 
-public interface TypeService
-        extends BasicService<Long, Type, TypeInput> {
+public interface TypeService extends
+        CreatorBasicService<Long, Type, TypeInput>,
+        FinderBasicService<Type, Long>,
+        DeleterBasicService<Type, Long> {
 
     /**
      * @param typeName

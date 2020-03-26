@@ -105,13 +105,27 @@ public class PackServiceImpl implements PackService {
     }
 
     @Override
-    public WrapFactory<Pack, SurfaceException> wrapFactory() {
+    public WrapFactory<Pack, SurfaceException> wrapFactoryForCreator() {
         return wrapFactory;
     }
 
     @Override
-    public JpaRepository<Pack, Long> jpaRepository() {
+    public JpaRepository<Pack, Long> jpaRepositoryForCreator() {
         return packRepository;
     }
 
+    @Override
+    public WrapFactory<Pack, SurfaceException> wrapFactoryForDeleter() {
+        return wrapFactory;
+    }
+
+    @Override
+    public JpaRepository<Pack, Long> jpaRepositoryForDeleter() {
+        return packRepository;
+    }
+
+    @Override
+    public JpaRepository<Pack, Long> jpaRepositoryForFinder() {
+        return packRepository;
+    }
 }

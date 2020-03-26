@@ -7,12 +7,10 @@ import org.springframework.stereotype.Service;
 import team.mediasoft.education.tracker.dto.NodeInput;
 import team.mediasoft.education.tracker.entity.Node;
 import team.mediasoft.education.tracker.exception.SurfaceException;
-import team.mediasoft.education.tracker.exception.tree.inner.NotSupportedException;
 import team.mediasoft.education.tracker.repository.NodeRepository;
 import team.mediasoft.education.tracker.service.NodeService;
 import team.mediasoft.education.tracker.service.impl.verification.TestResultSolver;
 import team.mediasoft.education.tracker.service.impl.verification.impl.UniquePostcodeNodeTester;
-import team.mediasoft.education.tracker.support.Wrap;
 import team.mediasoft.education.tracker.support.WrapFactory;
 
 import java.util.List;
@@ -46,16 +44,6 @@ public class NodeServiceImpl implements NodeService {
     }
 
     @Override
-    public Wrap<Node, SurfaceException> deleteById(Long aLong) {
-        return wrapFactory.ofFail(new NotSupportedException("delete node not supported"));
-    }
-
-    @Override
-    public SurfaceException checkDeleteAbility(Long aLong) {
-        return new NotSupportedException("check ability to delete node by id not supported");
-    }
-
-    @Override
     public List<Node> getNodesByPostcodeStartsWith(String postcode, Pageable pageable) {
         return nodeRepository.findByPostcodeStartingWithOrderByPostcode(postcode, pageable);
     }
@@ -76,13 +64,17 @@ public class NodeServiceImpl implements NodeService {
     }
 
     @Override
-    public WrapFactory<Node, SurfaceException> wrapFactory() {
+    public WrapFactory<Node, SurfaceException> wrapFactoryForCreator() {
         return wrapFactory;
     }
 
     @Override
-    public JpaRepository<Node, Long> jpaRepository() {
+    public JpaRepository<Node, Long> jpaRepositoryForCreator() {
         return nodeRepository;
     }
 
+    @Override
+    public JpaRepository<Node, Long> jpaRepositoryForFinder() {
+        return nodeRepository;
+    }
 }

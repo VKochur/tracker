@@ -9,7 +9,6 @@ import team.mediasoft.education.tracker.entity.Type;
 import team.mediasoft.education.tracker.exception.SurfaceException;
 import team.mediasoft.education.tracker.exception.tree.request.NotExistsDataException;
 import team.mediasoft.education.tracker.exception.tree.request.NotUniqueDataException;
-import team.mediasoft.education.tracker.repository.PackRepository;
 import team.mediasoft.education.tracker.repository.TypeRepository;
 import team.mediasoft.education.tracker.service.TypeService;
 import team.mediasoft.education.tracker.service.impl.verification.Decider;
@@ -31,8 +30,6 @@ public class TypeServiceImpl implements TypeService {
     private TypeRepository typeRepository;
 
     private WrapFactory<Type, SurfaceException> wrapFactory;
-
-    private PackRepository packRepository;
 
     private TestResultSolver<SurfaceException> solver;
 
@@ -56,6 +53,7 @@ public class TypeServiceImpl implements TypeService {
      * @param id
      * @return if null, it is ok, or exception
      */
+    @Override
     public SurfaceException checkDeleteAbility(Long id) {
         List<SurfaceException> exceptionList = Arrays.asList(
                 solver.solve(ExistTypeByIdTester.class, id),
@@ -113,19 +111,28 @@ public class TypeServiceImpl implements TypeService {
         this.typeRepository = typeRepository;
     }
 
-    @Autowired
-    public void setPackRepository(PackRepository packRepository) {
-        this.packRepository = packRepository;
-    }
-
     @Override
-    public WrapFactory<Type, SurfaceException> wrapFactory() {
+    public WrapFactory<Type, SurfaceException> wrapFactoryForCreator() {
         return wrapFactory;
     }
 
     @Override
-    public JpaRepository<Type, Long> jpaRepository() {
+    public JpaRepository<Type, Long> jpaRepositoryForCreator() {
         return typeRepository;
     }
 
+    @Override
+    public WrapFactory<Type, SurfaceException> wrapFactoryForDeleter() {
+        return wrapFactory;
+    }
+
+    @Override
+    public JpaRepository<Type, Long> jpaRepositoryForDeleter() {
+        return typeRepository;
+    }
+
+    @Override
+    public JpaRepository<Type, Long> jpaRepositoryForFinder() {
+        return typeRepository;
+    }
 }

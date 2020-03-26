@@ -7,11 +7,11 @@ import team.mediasoft.education.tracker.dto.StoryPointInput;
 import team.mediasoft.education.tracker.entity.StoryPoint;
 import team.mediasoft.education.tracker.entity.support.PackStates;
 import team.mediasoft.education.tracker.exception.SurfaceException;
-import team.mediasoft.education.tracker.exception.tree.inner.NotSupportedException;
 import team.mediasoft.education.tracker.repository.NodeRepository;
 import team.mediasoft.education.tracker.repository.PackRepository;
 import team.mediasoft.education.tracker.repository.StoryPointRepository;
 import team.mediasoft.education.tracker.service.StoryPointService;
+import team.mediasoft.education.tracker.service.basic.CreatorBasicService;
 import team.mediasoft.education.tracker.service.impl.verification.Decider;
 import team.mediasoft.education.tracker.service.impl.verification.TestResultSolver;
 import team.mediasoft.education.tracker.service.impl.verification.impl.ExistNodeByIdTester;
@@ -19,6 +19,7 @@ import team.mediasoft.education.tracker.service.impl.verification.impl.ExistPack
 import team.mediasoft.education.tracker.support.Wrap;
 import team.mediasoft.education.tracker.support.WrapFactory;
 
+import javax.annotation.PostConstruct;
 import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -41,15 +42,40 @@ public class StoryPointServiceImpl implements StoryPointService {
 
     private Synchronizator synchronizator;
 
+    private CreatorBasicService<Long, StoryPoint, StoryPointInput> creatorBasicService;
 
-    @Override
-    public StoryPoint getEntityForCreationByInput(StoryPointInput dtoInput) {
-        StoryPoint forCreation = new StoryPoint();
-        forCreation.setPack(packRepository.findById(dtoInput.getPackId()).get());
-        forCreation.setPlace(nodeRepository.findById(dtoInput.getNodeId()).get());
-        forCreation.setState(PackStates.valueOf(dtoInput.getState()));
-        forCreation.setPoint(LocalDateTime.now());
-        return forCreation;
+    @PostConstruct
+    void initCreatorService() {
+        creatorBasicService = new CreatorBasicService<Long, StoryPoint, StoryPointInput>() {
+            @Override
+            public WrapFactory<StoryPoint, SurfaceException> wrapFactoryForCreator() {
+                return wrapFactory;
+            }
+
+            @Override
+            public JpaRepository<StoryPoint, Long> jpaRepositoryForCreator() {
+                return storyPointRepository;
+            }
+
+            @Override
+            public SurfaceException checkCreateAbility(StoryPointInput dtoInput) {
+                List<SurfaceException> exceptionList = Arrays.asList(
+                        solver.solve(ExistPackByIdTester.class, dtoInput.getPackId()),
+                        solver.solve(ExistNodeByIdTester.class, dtoInput.getNodeId())
+                );
+                return decider.decide(exceptionList);
+            }
+
+            @Override
+            public StoryPoint getEntityForCreationByInput(StoryPointInput dtoInput) {
+                StoryPoint forCreation = new StoryPoint();
+                forCreation.setPack(packRepository.findById(dtoInput.getPackId()).get());
+                forCreation.setPlace(nodeRepository.findById(dtoInput.getNodeId()).get());
+                forCreation.setState(PackStates.valueOf(dtoInput.getState()));
+                forCreation.setPoint(LocalDateTime.now());
+                return forCreation;
+            }
+        };
     }
 
     /**
@@ -60,20 +86,11 @@ public class StoryPointServiceImpl implements StoryPointService {
     @Transactional
     @Override
     public Wrap<StoryPoint, SurfaceException> addStoryPoint(StoryPointInput dtoInput) {
-        Wrap<StoryPoint, SurfaceException> storyPointWrap = create(dtoInput);
+        Wrap<StoryPoint, SurfaceException> storyPointWrap = creatorBasicService.create(dtoInput);
         if (storyPointWrap.wasReturnedValue()) {
             synchronizator.doSynchronizationWithPack(storyPointWrap.getValue());
         }
         return storyPointWrap;
-    }
-
-    @Override
-    public SurfaceException checkCreateAbility(StoryPointInput dtoInput) {
-        List<SurfaceException> exceptionList = Arrays.asList(
-                solver.solve(ExistPackByIdTester.class, dtoInput.getPackId()),
-                solver.solve(ExistNodeByIdTester.class, dtoInput.getNodeId())
-        );
-        return decider.decide(exceptionList);
     }
 
     @Override
@@ -117,22 +134,7 @@ public class StoryPointServiceImpl implements StoryPointService {
     }
 
     @Override
-    public WrapFactory<StoryPoint, SurfaceException> wrapFactory() {
-        return wrapFactory;
-    }
-
-    @Override
-    public JpaRepository<StoryPoint, Long> jpaRepository() {
+    public JpaRepository<StoryPoint, Long> jpaRepositoryForFinder() {
         return storyPointRepository;
-    }
-
-    @Override
-    public SurfaceException checkDeleteAbility(Long id) {
-        return new NotSupportedException("check delete story's point not supported");
-    }
-
-    @Override
-    public Wrap<StoryPoint, SurfaceException> deleteById(Long id) {
-        return wrapFactory.ofFail(new NotSupportedException("delete story's point not supported"));
     }
 }
