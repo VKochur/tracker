@@ -74,6 +74,11 @@ public class PackServiceImpl implements PackService {
         return testResultSolver.solve(ExistPackByIdTester.class, id);
     }
 
+    @Override
+    public List<Long> findPackIdsWhoseRouteHasLoop() {
+        return packRepository.findPackIdsWhoseRouteHasLoop();
+    }
+
     @Autowired
     public void setTestResultSolver(TestResultSolver<SurfaceException> testResultSolver) {
         this.testResultSolver = testResultSolver;

@@ -13,6 +13,7 @@ public class StoryPointInput {
     @NotNull
     private Long packId;
 
+    @NotNull
     @ValueOfEnum(enumClazz = PackStates.class, message = "must be any of \"STORAGE\", \"MOVEMENT\"")
     private String state;
 

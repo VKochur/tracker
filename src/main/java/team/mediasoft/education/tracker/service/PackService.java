@@ -6,6 +6,7 @@ import team.mediasoft.education.tracker.service.basic.CreatorBasicService;
 import team.mediasoft.education.tracker.service.basic.DeleterBasicService;
 import team.mediasoft.education.tracker.service.basic.FinderBasicService;
 
+import java.util.List;
 import java.util.Optional;
 
 
@@ -15,4 +16,6 @@ public interface PackService extends
         DeleterBasicService<Pack, Long> {
 
     Optional<Pack> getByIdentifier(String identifier);
+
+    List<Long> findPackIdsWhoseRouteHasLoop();
 }

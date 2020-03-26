@@ -76,6 +76,11 @@ public class PackRest {
         return mapper.getListOutputs(packService.getAll(PageRequest.of(pageNumber, pageSize, Sort.by("identifier"))));
     }
 
+    @GetMapping(value = "/with_loop_in_route")
+    public List<Long> getIdsWhoseRouteHasLoop() {
+        return packService.findPackIdsWhoseRouteHasLoop();
+    }
+
     @DeleteMapping(value = "/{id}")
     public PackOutput deleteById(@PathVariable(name = "id") Long id) throws SurfaceException {
         return mapper.getOutput(packService.deleteById(id).getValueOrElseThrow());
