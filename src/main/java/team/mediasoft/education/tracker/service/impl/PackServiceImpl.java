@@ -19,6 +19,7 @@ import team.mediasoft.education.tracker.service.impl.verification.impl.ExistType
 import team.mediasoft.education.tracker.service.impl.verification.impl.UniqueIdentifierPackTester;
 import team.mediasoft.education.tracker.support.WrapFactory;
 
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -77,6 +78,11 @@ public class PackServiceImpl implements PackService {
     @Override
     public List<Long> findPackIdsWhoseRouteHasLoop() {
         return packRepository.findPackIdsWhoseRouteHasLoop();
+    }
+
+    @Override
+    public List<Long> findPackIdsWhichWereInNodeAtTime(Long nodeId, LocalDateTime fromDate, LocalDateTime toDate) {
+        return packRepository.findPackIdsWhichWereInNodeAtTime(nodeId, fromDate, toDate);
     }
 
     @Autowired

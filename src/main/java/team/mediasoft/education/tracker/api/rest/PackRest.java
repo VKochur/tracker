@@ -17,6 +17,7 @@ import team.mediasoft.education.tracker.service.PackService;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.Positive;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -79,6 +80,11 @@ public class PackRest {
     @GetMapping(value = "/with_loop_in_route")
     public List<Long> getIdsWhoseRouteHasLoop() {
         return packService.findPackIdsWhoseRouteHasLoop();
+    }
+
+    @GetMapping(value = "/were_in_node/{nodeId}")
+    public List<Long> getIdsPackWhichWereInNode(@PathVariable(name = "nodeId") Long nodeId, @RequestParam("from") LocalDateTime from, @RequestParam("to") LocalDateTime to) {
+        return packService.findPackIdsWhichWereInNodeAtTime(nodeId, from, to);
     }
 
     @DeleteMapping(value = "/{id}")
