@@ -3,6 +3,7 @@ package team.mediasoft.education.tracker.api.rest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import team.mediasoft.education.tracker.dto.PackInput;
@@ -13,6 +14,7 @@ import team.mediasoft.education.tracker.entity.support.PackStates;
 import team.mediasoft.education.tracker.exception.SurfaceException;
 import team.mediasoft.education.tracker.exception.tree.request.NotExistsDataException;
 import team.mediasoft.education.tracker.service.PackService;
+
 
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
@@ -27,9 +29,9 @@ import java.util.Optional;
 @RequestMapping("api/pack")
 public class PackRest {
 
-    private PackService packService;
-
     private Mapper<Pack, PackOutput> mapper;
+
+    private PackService packService;
 
     @Autowired
     public void setPackService(PackService packService) {
@@ -83,8 +85,11 @@ public class PackRest {
     }
 
     @GetMapping(value = "/were_in_node/{nodeId}")
-    public List<Long> getIdsPackWhichWereInNode(@PathVariable(name = "nodeId") Long nodeId, @RequestParam("from") LocalDateTime from, @RequestParam("to") LocalDateTime to) {
-        return packService.findPackIdsWhichWereInNodeAtTime(nodeId, from, to);
+    public List<Long> getIdsPackWhichWereInNode(@PathVariable(name = "nodeId") Long nodeId,
+                                                @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) @RequestParam("fromDate") LocalDateTime fromDate,
+                                                @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) @RequestParam("toDate") LocalDateTime toDate) {
+
+        return packService.findPackIdsWhichWereInNodeAtTime(nodeId, fromDate, toDate);
     }
 
     @DeleteMapping(value = "/{id}")
